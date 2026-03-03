@@ -1,0 +1,64 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\setstretch{1.2}
+\usepackage{hyperref}
+
+\title{Bachelor Thesis}
+\author{Roman Sannikov}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+% Summary of the work goes here.
+\end{abstract}
+\tableofcontents
+\cleardoublepage
+
+\chapter*{Abstract}
+% Summary of the work
+\addcontentsline{toc}{chapter}{Abstract}
+
+\chapter{Introduction}
+\section*{Presentation of the problem and relevance of the topic}
+% Introduce problem and explain why it matters.
+\addcontentsline{toc}{section}{Presentation of the problem and relevance of the topic}
+\section{Literature review}
+\label{sec:literature-review}
+% Review of relevant and classical literature.
+
+\chapter{Methodology}
+\section{Methods and technologies used}
+% Describe the methods and technologies employed.
+\subsection{Project requirements}
+\label{subsec:project-requirements}
+% Define project requirements and limitations.
+\subsection{Technologies selection}
+\label{subsec:technology-selection}
+% Hardware and software choices (simulation and real-time).
+\subsection{Models}
+\label{subsec:models}
+% Models used or developed for the quadroped.
+
+\chapter{Results}
+\label{chap:results}
+% Results of the work, analysis, and showcase.
+
+\chapter{Conclusion}
+\label{chap:conclusion}
+% Summarize the most important findings and their significance.
+
+\chapter{Future work}
+\label{chap:future-work}
+% Suggestions for future work based on the findings.
+
+\chapter*{Reference list}
+% List of referenced literature.
+\addcontentsline{toc}{chapter}{Reference list}
+
+\end{document}
