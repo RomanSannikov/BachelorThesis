@@ -1,11 +1,11 @@
-\documentclass[12pt]{report}
+\documentclass[a4paper,12pt]{report}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{mathptmx}
 \usepackage{geometry}
-\geometry{margin=1in}
+\geometry{a4paper,margin=1in}
 \usepackage{setspace}
-\setstretch{1.2}
+\setstretch{1.5}
 \usepackage{hyperref}
 
 \title{Bachelor Thesis}
@@ -14,20 +14,19 @@
 
 \begin{document}
 \maketitle
-\begin{abstract}
-% Summary of the work goes here.
-\end{abstract}
+\thispagestyle{empty}
 \tableofcontents
 \cleardoublepage
 
-\chapter*{Abstract}
-% Summary of the work
-\addcontentsline{toc}{chapter}{Abstract}
 
 \chapter{Introduction}
-\section*{Presentation of the problem and relevance of the topic}
-% Introduce problem and explain why it matters.
-\addcontentsline{toc}{section}{Presentation of the problem and relevance of the topic}
+Over the last 20 years there was a major leap in robotics, especially in the field of quadropeds.
+Many great papers developing the domain were published. And most of the researching work was done
+in labs, requiring great means for prototyping and pushing the boundaries of the domain.
+In this paper, I would like to review the research and practical achivements that have been done
+throughout the years and combine it in a project, the cost of which will be less. The idea is to
+establish a base for low-cost quadroped robots to make them more affortable for day-to-day use in
+different fields of human lives.
 \section{Literature review}
 \label{sec:literature-review}
 % Review of relevant and classical literature.
@@ -58,7 +57,8 @@
 % Suggestions for future work based on the findings.
 
 \chapter*{Reference list}
-% List of referenced literature.
+1. BigDog, the Rough-Terrain Quadruped Robot
+2. MIT Cheetah 3: Design and Control of a Robust, Dynamic Quadruped Robot
 \addcontentsline{toc}{chapter}{Reference list}
 
 \end{document}
