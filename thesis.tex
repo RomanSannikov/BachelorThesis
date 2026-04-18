@@ -7,6 +7,7 @@
 \usepackage{setspace}
 \setstretch{1.5}
 \usepackage{hyperref}
+\usepackage{parskip}
 
 \title{Bachelor Thesis}
 \author{Roman Sannikov}
@@ -27,9 +28,27 @@ In this paper, I would like to review the research and practical achivements tha
 throughout the years and combine it in a project, the cost of which will be less. The idea is to
 establish a base for low-cost quadruped robots to make them more affortable for day-to-day use in
 different fields of human lives.
+
 \section{Literature review}
 \label{sec:literature-review}
-% Review of relevant and classical literature.
+There is a number of "classical" papers that can be used to lay the foundation for this project.
+They vary from gaits and control to computer vision and successful real-world examples.
+
+The most important thing for a quadruped robot is locomotion. The mathematical analysis in the 1968
+"On the stability properties of quadruped creeping gaits" Mathematical Biosciences journal article
+shows, that there is "a unique optimum gait that maximizes static stability". The work explains
+that for static stability the center of gravity must be within the support polygon. This shape
+is formed by connecting all feet that touch the ground (contact points). Though, stability can be
+achived by dynamic means as well. The concept of dynamic stability is discussed in the 1984
+"Experiments in Balance with a 3D One-Legged Hopping Machine", which explains the control
+algorithms: forward velocity, body alttitude, and hopping height. In the recent years, compute
+became more accessible and the development of neural networks allowed to creation of simulated
+enviroments, in which ditigal versions of robots were put in and given a task to arrive from
+point A to B without being programmed to do so using Deep Reinforcement Learning (DRL). This
+approach was used in 2019 "Learning Agile and Dynamic Motor Skills for Legged Robots" for ANYaml
+robot. The researchers applied the real-world behavior of the robot's motors to the simulation
+that allowed the simulation to be more realistic and helped the robot learn imperfect nuances of
+the world.
 
 \chapter{Methodology}
 \section{Methods and technologies used}
@@ -59,6 +78,9 @@ different fields of human lives.
 \chapter*{Reference list}
 1. BigDog, the Rough-Terrain Quadruped Robot
 2. MIT Cheetah 3: Design and Control of a Robust, Dynamic Quadruped Robot
+3. On the stability properties of quadruped creeping gaits
+4. Experiments in Balance with a 3D One-Legged Hopping Machine
+5. Learning Agile and Dynamic Motor Skills for Legged Robots
 \addcontentsline{toc}{chapter}{Reference list}
 
 \end{document}
