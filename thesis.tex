@@ -77,6 +77,37 @@ locomotion over obstacles. These systems represented the state-of-the-art capabi
 robots at their time. The projects were sponsored by DARPA and MIT respectively and did not focus
 on cost reduction, but rather on pushing the boundaries of what quadruped robots could do.
 
+Another key component of the project is computer vision. Generally, robots can be controlled by a
+human operator, which remains a very practical approach. However, computer vision is a significant
+step towards autonomy and high-level task execution. Vision is critical for navigation, obstacle
+avoidance, and interaction with the environment. For this project, I decided to use YOLO,
+a state-of-the-art object detection model, based on the "You Only Look Once" (2016) architecture,
+which was a game-changer in the field of real-time object detection. The model divides the image
+into a grid, and each grid cell is responsible for predicting bounding boxes, confidence score, and
+class probabilities of an object whose center falls into that cell. As described in the paper:
+``[The] network architecture is inspired by the GoogLeNet model for image classification\ldots\ [It]
+has 24 convolutional layers followed by 2 fully connected layers. Instead of the inception modules
+used by GoogLeNet,\ldots [it simply uses] $1 \times 1$ reduction layers followed by $3 \times 3$
+convolutional layers\ldots''. The original YOLO uses the Sum-Squared Error (SSE) loss function
+between the predictions and the ground truth. While the architecture has evolved significantly in
+subsequent versions to utilize CSPDarknet, a high-performance convolutional neural network backbone,
+and advanced loss functions, the fundamental principle of grid-based single-pass detection remains
+the core of the model used in this project. Additionally, it is worth mentioning Object Detection
+with Discriminatively Trained Part Based Models (2010), which is a classic paper on training models
+to recognize objects based on their parts, because quadruped robots usually have limited field of
+view due to their height. Applying the logic of part-based modeling to train a model to recognize
+an object by its lower part is crucial for the robot to "understand" the environment.
+
+While the architecture and approach to train the model are important, the datasets used for training
+enable the model to reach its full potential. In this project, I utilize two of the most
+significant benchmarks in the history of object detection: Common Objects in Context (COCO) (2014)
+and Stanford Dogs (2011). The COCO dataset established the standard for detecting objects in
+"natural" settings rather than perfectly centered studio shots. It contains over 330K images, with
+more than 2.5 million labeled instances across 91 object categories, including humans, dogs, cats,
+etc., easily recognizable by a 4-year-old. The Stanford Dogs dataset ``\ldots includes over 22,000
+annotated images of dogs belonging to 120 species. Each image is annotated with a bounding box and
+object class label.''
+
 \chapter{Methodology}
 \section{Methods and technologies used}
 % Describe the methods and technologies employed.
@@ -108,6 +139,10 @@ on cost reduction, but rather on pushing the boundaries of what quadruped robots
 3. On the stability properties of quadruped creeping gaits
 4. Experiments in Balance with a 3D One-Legged Hopping Machine
 5. Learning Agile and Dynamic Motor Skills for Legged Robots
+6. You Only Look Once: Unified, Real-Time Object Detection
+7. Object Detection with Discriminatively Trained Part-Based Models
+8. Microsoft COCO: Common Objects in Context
+9. Novel dataset for Fine-Grained Image Categorization: Stanford Dogs
 \addcontentsline{toc}{chapter}{Reference list}
 
 \end{document}
