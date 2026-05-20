@@ -110,13 +110,61 @@ object class label.''
 
 \chapter{Methodology}
 \section{Methods and technologies used}
-% Describe the methods and technologies employed.
+Developing a functional quadruped robot on a limited budget requires navigating a wide landscape
+of hardware components, software frameworks, and design methodologies. While the robotics field
+offers a rich variety of actuators, computing platforms, sensors, and control strategies, the
+project constraints significantly narrow the range of viable options. Cost, reproducibility, and
+the mechanical demands of legged locomotion impose trade-offs at every stage of the design
+process, forcing a careful balance between performance, affordability, and ease of integration.
+The following subsections outline the requirements that shaped this design space and present the
+technologies and models selected to address them.
+
 \subsection{Project requirements}
 \label{subsec:project-requirements}
-% Define project requirements and limitations.
+There are quite a lot of requirements and limitations in this project as it seeks to demonstrate
+a way to develop a low-cost quadruped robot. There are three big groups of limitations that define
+requirements. The first, and most significant, is cost. It influences the other group which is
+the hardware. The hardware, limited by cost, in turn constrains the software and algorithms. All
+together they create a really tight framework for the project, which is a good thing since it
+forces to creativity and finding new solutions.
+
+My requirements for the project are the following:
+\begin{itemize}
+    \item The robot should be able to walk on flat surfaces in all directions, i.e. forward,
+backwards, sideways, and turning in place. Flat surfaces were chosen here because rough terrain
+is too complex for the hardware the project uses.
+    \item The robot should have 12 degrees of freedom (DOF) to allow for a variety of gaits and
+maneuvers. Each leg should have 3 DOF, which will be hip abduction/adduction, hip
+flexion/extension, and knee flexion/extension.
+    \item It should have computer vision capabilities to detect and recognize objects. For the
+sake of demonstration, I chose dogs and humans as the target objects because they represent the
+primary agents (humans) and subjects (dogs) the robot is expected to encounter and interact with.
+	\item The robot should be easy to assemble and reproduce by others. The components should
+be available, affordable, and designed with swappability in mind to allow for future upgrades and/or
+repairs.
+\end{itemize}
+
+On the limitation side, the cost of the whole project should not exceed 300 EUR, which is quite
+limiting for the result the project wants to achieve.
+
+The hardware and software choices are affected by this limitation and the technology selection
+will be discussed in the next section.
 \subsection{Technologies selection}
 \label{subsec:technology-selection}
-% Hardware and software choices (simulation and real-time).
+Everything starts with the model. Nowadays, 3D printers are quite accessible for people making them
+a great choice for the project since it allows producing custom elements perfectly fitting and
+satisfuing the requirements and at the same time being easily reproducable by the others. At my
+disposal were Bambu Lab printers A1 mini, X1C Carbon and H2D series. I tried them all and settled
+on the last one since it has two nozzles, allowing to use 2 types of filament at the same time: PLA
+and PETG. PLA is a great general material for the robot itself, while PETG was used for supporting
+elements. It is possible to use only PLA, and I have tried that, but PETG make life easier since 
+does not stick to PLA, making it a perfect choice for supports. The design of the robot was done in
+Onshape, a free cloud-based CAD web software with enough functionality for the project. I have not
+created the initial model by myself, as it would take much more time, but rather found a suitable one
+with Creative Commons (4.0 International License) License on the Internet made by Tom Knox and
+modified it to fit the requirements. The requirements lacking by the initial model were 12 DOF and
+ease of assembly. What the original model did provide are a solid base and design I wanted, 3 DOF per
+front legs, and a place for the camera module.
 \subsection{Models}
 \label{subsec:models}
 % Models used or developed for the quadruped.
@@ -143,6 +191,7 @@ object class label.''
 7. Object Detection with Discriminatively Trained Part-Based Models
 8. Microsoft COCO: Common Objects in Context
 9. Novel dataset for Fine-Grained Image Categorization: Stanford Dogs
+10. https://www.printables.com/model/1443108-quadruped-i
 \addcontentsline{toc}{chapter}{Reference list}
 
 \end{document}
