@@ -134,9 +134,10 @@ My requirements for the project are the following:
     \item The robot should be able to walk on flat surfaces in all directions, i.e. forward,
 backwards, sideways, and turning in place. Flat surfaces were chosen here because rough terrain
 is too complex for the hardware the project uses.
-    \item The robot should have 12 degrees of freedom (DOF) to allow for a variety of gaits and
-maneuvers. Each leg should have 3 DOF, which will be hip abduction/adduction, hip
-flexion/extension, and knee flexion/extension.
+    \item The robot should have 12 degrees of freedom (DOF) --- where each joint that can move
+independently contributes one DOF --- to allow for a variety of gaits and maneuvers. Each leg
+should have 3 DOF: hip abduction/adduction (side-to-side movement), hip flexion/extension
+(forward-backward movement), and knee flexion/extension.
     \item It should have computer vision capabilities to detect and recognize objects. For the
 sake of demonstration, I chose dogs and humans as the target objects because they represent the
 primary agents (humans) and subjects (dogs) the robot is expected to encounter and interact with.
@@ -154,18 +155,69 @@ will be discussed in the next section.
 \label{subsec:technology-selection}
 Everything starts with the model. Nowadays, 3D printers are quite accessible for people making them
 a great choice for the project since it allows producing custom elements perfectly fitting and
-satisfuing the requirements and at the same time being easily reproducable by the others. At my
+satisfying the requirements and at the same time being easily reproducible by the others. At my
 disposal were Bambu Lab printers A1 mini, X1C Carbon and H2D series. I tried them all and settled
-on the last one since it has two nozzles, allowing to use 2 types of filament at the same time: PLA
-and PETG. PLA is a great general material for the robot itself, while PETG was used for supporting
-elements. It is possible to use only PLA, and I have tried that, but PETG make life easier since 
-does not stick to PLA, making it a perfect choice for supports. The design of the robot was done in
-Onshape, a free cloud-based CAD web software with enough functionality for the project. I have not
-created the initial model by myself, as it would take much more time, but rather found a suitable one
-with Creative Commons (4.0 International License) License on the Internet made by Tom Knox and
-modified it to fit the requirements. The requirements lacking by the initial model were 12 DOF and
-ease of assembly. What the original model did provide are a solid base and design I wanted, 3 DOF per
-front legs, and a place for the camera module.
+on the last one since it has two nozzles, allowing the use of two types of filament at the same
+time: PLA and PETG. PLA is a great general material for the robot itself, while PETG was used for
+supporting elements. It is possible to use only PLA, and I have tried that, but PETG makes life
+easier since it does not stick to PLA, making it a perfect choice for supports. The design of the
+robot was done in Onshape, a free cloud-based CAD web software with enough functionality for the
+project. I have not created the initial model by myself, as it would take much more time, but rather
+found a suitable one with Creative Commons (4.0 International License) on the Internet made
+by Tom Knox and modified it to fit the requirements. The requirements not met by the initial model
+were 12 DOF and ease of assembly. What the original model did provide was a solid base and design I
+wanted, 3 DOF per front leg, and a place for the camera module.
+
+What made the original 3D model hard to assemble was the fact that it consisted of 149 unique parts
+connected by different types of screws. The most problematic part was the leg. All four legs are the
+same just mirrored, which made redesigning much easier. To reduce complexity of assembly, I
+redesigned legs and the body to be print-in-place, meaning ready to use parts without the need of
+additional assembly. I also reduced the number of unique screws in the project to just 1 type, which
+is M3 of two sizes.
+
+For the actuators, I chose WS-MG996R digital servos with metal gears, which are widely used in hobby
+robotics, 3 per leg, which gives 12 DOF in total. These servos are really affordable and deliver
+\(11 \text{ kg}\cdot\text{cm}\) stall torque with a speed of 0.17--0.14 seconds per 60°, operating
+at 4.8V to 7.2V DC. On the other hand, cheaper actuators mean low precision, feedback, and torque,
+which are necessary for this type of project. Considering all pros and cons, these are the bare
+minimum for the project.
+
+For the main controller board, I chose Raspberry Pi 5 4GB. It is a nice little computer powerful
+enough for controlling servos and running small object recognition models. A big advantage of
+this computer is that it runs Raspberry Pi OS, which is a Linux based operating system, allowing
+fast prototyping and running existing programs and tools. The Raspberry Pi 5 offers significant
+improvements over its predecessor, including faster GPIO and better overall performance, making it
+well-suited for this application. The Raspberry Pi does not have enough GPIO pins to control all
+12 servos, so I went with PCA9685, a 16-channel, 12-bit PWM (Pulse Width Modulation) driver chip.
+It uses I2C communication protocol and takes just 4 Raspberry Pi GPIO pins: VCC 3V, SDA, SCL, and
+GND. The servos consumption can spike up to 2.5A per servo, so in total it is 30A, which is way more
+than the Raspberry Pi can provide. To solve this problem, I use an external power supply, which is
+4 18650 2500 mAh Lithium-ion batteries able to produce enough current for the servos. Connected in
+a 2S2P configuration (two series pairs in parallel), they provide 7.4V with a total capacity of
+5000 mAh. With that the potential difference is larger than what the servos and Raspberry Pi can
+handle, so I use buck converters to step down the voltage to 7V for the servos and 5V for
+the Raspberry Pi.
+
+For the computer vision part, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
+an OmniVision OV5647 Color CMOS sensor. The camera has a 3.6 mm focal length lens with a
+$54^\circ \times 41^\circ$
+angle of view, providing a horizontal field of view roughly equal to the distance from the subject
+at typical operating ranges. The camera uses a CSI ribbon cable to connect to the high-speed,
+dual-purpose MIPI port on the Raspberry Pi, offering lower latency and CPU overhead compared to
+USB cameras.
+
+On the software side, I use Python as the main programming language. It is a great choice for rapid
+prototyping and has a huge ecosystem of libraries for robotics, computer vision, and machine
+learning. For controlling the servos, I use the Adafruit PCA9685 library, which provides a simple
+interface for sending PWM (Pulse Width Modulation) signals to the servos. PWM varies the duty
+cycle of a square wave to control the average voltage delivered, with pulse widths typically
+ranging from 1 to 2 milliseconds corresponding to 0 to 180 degrees of servo rotation. For object
+detection, I use the Ultralytics YOLO library, which offers a streamlined interface for YOLO-based
+inference and integrates well with the Raspberry Pi platform.
+\subsection{Implementation}
+\label{subsec:implementation}
+% Implementation details for the quadruped.
+
 \subsection{Models}
 \label{subsec:models}
 % Models used or developed for the quadruped.
