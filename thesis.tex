@@ -162,11 +162,14 @@ time: PLA and PETG. PLA is a great general material for the robot itself, while 
 supporting elements. It is possible to use only PLA, and I have tried that, but PETG makes life
 easier since it does not stick to PLA, making it a perfect choice for supports. The design of the
 robot was done in Onshape, a free cloud-based CAD web software with enough functionality for the
-project. I have not created the initial model by myself, as it would take much more time, but rather
-found a suitable one with Creative Commons (4.0 International License) on the Internet made
-by Tom Knox and modified it to fit the requirements. The requirements not met by the initial model
-were 12 DOF and ease of assembly. What the original model did provide was a solid base and design I
-wanted, 3 DOF per front leg, and a place for the camera module.
+project. For the slicer --- software that converts 3D models into G-code instructions for the
+printer, specifying toolpaths, layer heights, and print parameters --- Bambu Lab's Bambu Studio was
+used as it perfectly works with the printers and has the sufficient functionality for the project.
+I have not created the initial model by myself, as it would take much more time, but rather found
+a suitable one with Creative Commons (4.0 International License) on the Internet made by Tom Knox
+and modified it to fit the requirements. The requirements not met by the initial model were 12 DOF
+and ease of assembly. What the original model did provide was a solid base and design I wanted,
+3 DOF per front leg, and a place for the camera module.
 
 What made the original 3D model hard to assemble was the fact that it consisted of 149 unique parts
 connected by different types of screws. The most problematic part was the leg. All four legs are the
@@ -216,8 +219,103 @@ detection, I use the Ultralytics YOLO library, which offers a streamlined interf
 inference and integrates well with the Raspberry Pi platform.
 \subsection{Implementation}
 \label{subsec:implementation}
-% Implementation details for the quadruped.
+The implementation started by downloading the original model and printing the most important
+part --- the leg. The leg model consisted of 7 parts, which took the printer around 3 hours. After,
+I assembled the leg, attached the hip to a servo and connected the servo directly to the Raspberry
+Pi with jumper wires. Printing it and testing that the leg works was a crucial step that helped me
+to verify that the model is capable of moving and having the physical model helped me understand
+what needed to be changed. Later, I started redesigning the leg to be print-in-place. First of all,
+it is important to understand the principles of such design. The most important idea is that there
+should be no overhanging parts, meaning that all the parts should be supported by the print itself.
+To achieve that, the maximum overhang angle should not exceed 45 degrees, beyond which support
+material would be required. Another thing to keep in mind is the clearance between the moving parts.
+Through experimentation, I found that 0.65 mm provides the best balance between smooth motion and
+minimal play, so this value was used for most clearances in the model. The height of every print was
+standard --- 0.2 mm and the support parameter was set for hanging parts like curves of the legs and
+body "ribs". The final leg consists of 6 elements: motor extension, extension link, shoulder disk,
+femur, secondary link, and tibia, printed as one module. After removing it from the printer bed and 
+detaching the supports, it is movable and ready to be installed. To get to the final design, I went
+through around twenty iterations of the leg and a couple of iterations of the body. Several design
+challenges emerged during these iterations and to achieve the requirements while using the same
+design, I had to break the basic principles. For example, a support blocker is used for the leg to
+block the support from being generated in the motor extension part, creating a bridging surface that
+spans a gap without support. Another example, showing the challenge of designing print-in-place
+models, is the knee. The knee joint employs a cylindrical pivot pin that is integrated into the
+tibia (lower leg), with the femur (upper leg) captured between the two halves of the tibia joint ---
+forming a sandwich-like structure. This arrangement creates overhangs on both the top and bottom
+surfaces of the femur where it interfaces with the tibia, requiring support material to be generated
+in two places: between the upper tibia surface and the femur, and between the femur and the lower
+tibia surface. The overhang surface is large and cannot be recovered if drooped and melted to the
+other part, thus support was necessary, so unfortunately, each knee has a bit of PETG support in it.
+PLA filament can also be used as an alternative to PETG for support, requiring breaking it by
+moving the knee joint after printing. Beyond the main structural parts, the model contains eight
+servo holders that are printed separately. Each holder weighs 5 grams and does not require support
+material. The holders attach to the servos with screws, while the connection to the body uses
+integrated pins that slot into corresponding holes, eliminating the need for additional fasteners.
+In total, printing the complete model requires approximately 20.5 hours and 490 grams of filament.
+The body takes 7 hours and 154 grams, each of the four legs requires 3 hours and 74 grams, and the
+eight servo holders together take 1.5 hours and 40 grams.
 
+When the whole model was stable and ready, I started assembling it all together. With the experience
+I gained, it would take around one hour to assemble everything. Connecting PCA9685 to the Raspberry
+Pi was a straightforward process. The control pin connection layout is the following: VCC to 3.3V,
+GND to GND, SDA to GPIO 2 (SDA), and SCL to GPIO 3 (SCL). PCA9685 does not power the servos from
+the controller, instead there is a separate V+ and GND terminals. Those are connected to an
+external power supply. While testing I used a lab power supply, set to 6V and 6A, which was enough
+for testing purposes. In order to enable I2C communication interface on the Raspberry Pi, it needed
+to be enabled through the Raspberry Pi Configuration tool, which can be accessed through
+\texttt{sudo raspi-config} under Interface Options, I2C. After that, I2C utilities should be
+installed by running \texttt{sudo apt install i2c-tools}. The connectivity can be verified by
+running \texttt{i2cdetect -y 1}, which should show the PCA9685 at address $0x40$ (hexadecimal). The
+address is hardcoded to $0x40$ by the manufacturer, as the default base address for this chip. In
+the I2C protocol, each device requires a unique 7-bit address for the master controller to identify
+it. The PCA9685 uses a partially configurable address scheme where the upper bits are fixed
+internally (binary $1000000$, corresponding to hexadecimal $0x40$), while the lower six bits can be
+modified via external address pins labeled $A^0$ through $A^5$. This design allows up to 62 PCA9685
+devices to coexist on the same bus by changing the pin configurations, enabling expansion of PWM
+outputs without requiring additional communication channels. For instance, setting pin $A^0$ high
+while keeping others low changes the address from $0x40$ to $0x41$. This flexible addressing makes
+the PCA9685 well-suited for robotics applications requiring numerous servo motors. For this project,
+I am not changing the default address, so it remains at $0x40$. The other pins are 16 channels for
+PWM output, which are connected to the servos. Each channel consists of three pins: V+ (power),
+GND (ground), and OUT (signal). I grouped them by leg in this order: hip extension, knee flexion,
+and hip abduction, so it is easier to understand which channel controls which joint. The PCA9685
+board exposes sockets for the servos, so it is convenient to connect them without soldering,
+however, the board itself exposes the I2C pins, while Raspberry Pi exposes its GPIO pins, so I had
+to solder wires to connect them together. Each servo has $180^\circ$ range of motion, so before
+attaching servos to the robot, I set: hip to $90^\circ$, knee to $60^\circ$, and abduction to
+$95^\circ$, to their home position. These values are hardcoded in the code and all movements are
+relative to them. Then, the servos are attached as following: the hip abduction servo is screwed
+vertically to its slot in the body and a dual-arm horn is attached to the gear, after that the hip
+extension and knee flexion servos are put together and secured with servo holders on the sides, then
+another dual-arm horn is attached to the knee flexion servo, while a round disc horn is screwed to
+the back side of the femur. Ultimately, the horns are connected to the hip and motor extension
+respectively. The same procedure is repeated for all four legs. After that, the electronics are
+installed inside the body and the Raspberry Pi camera module is mounted to the front camera slot.
+With the mechanical assembly complete, the control software can command movement.
+
+A step consists of two phases: the swing phase, where the leg is parabolically lifted and moved
+forward, and the stance phase, where the foot drives backward relative to the chassis, generating
+the ground reaction force that pushes the robot's body forward. A gait is the periodic pattern of
+these foot movements. To translate desired foot positions into servo angles, the system uses a
+lookup table approach rather than inverse kinematics. This method was chosen because the mechanical
+coupling in the leg design --- where hip movement affects knee angle --- makes standard analytical
+solutions impractical. The lookup table contains pre-calibrated mappings between joint angles and
+foot positions, created by setting different servo angles and measuring the resulting foot
+positions. When a target position is requested, the system identifies the nearest calibration points
+and interpolates between them using inverse distance weighting, providing smooth transitions even
+with sparse calibration data. Each servo is individually calibrated to account for mechanical
+variations and assembly differences between left and right legs. A direction multiplier ensures that
+positive commands produce consistent physical movements across all legs, while center offsets
+compensate for variations in the home position. Three distinct gaits are implemented: a crawl gait
+for statically stable locomotion, where legs move sequentially in a diagonal pattern; a trot gait
+for faster movement, where diagonal leg pairs move simultaneously; and a turning gait, where left
+and right legs move in opposite directions to generate rotational torque. Servo movements are
+interpolated over time with configurable speed, ensuring smooth motion and preventing sudden
+movements that could upset the robot's balance. All movements are defined relative to a home
+position, which serves as the reference point for calibration and initialization. Since the lookup
+table was measured for the left legs, the right legs use mirrored values to maintain symmetry in
+movement.
 \subsection{Models}
 \label{subsec:models}
 % Models used or developed for the quadruped.
@@ -245,7 +343,8 @@ BigDog, the rough-terrain quadruped robot.
 \bibitem{cheetah3}
 Katz, B., Di Carlo, J., \& Kim, S. (2019).
 MIT Cheetah 3: Design and control of a robust, dynamic quadruped robot.
-\textit{Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)}, 2245--2251.
+\textit{Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+2245--2251.
 
 \bibitem{mcghee1968}
 McGhee, R. B., \& Frank, A. A. (1968).
@@ -265,7 +364,8 @@ Learning agile and dynamic motor skills for legged robots.
 \bibitem{yolo}
 Redmon, J., Divvala, S., Girshick, R., \& Farhadi, A. (2016).
 You only look once: Unified, real-time object detection.
-\textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 779--788.
+\textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+779--788.
 
 \bibitem{felzenszwalb2010}
 Felzenszwalb, P. F., Girshick, R. B., McAllester, D., \& Ramanan, D. (2010).
@@ -273,17 +373,20 @@ Object detection with discriminatively trained part-based models.
 \textit{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 32(9), 1627--1645.
 
 \bibitem{coco}
-Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll{\'a}r, P., \& Zitnick, C. L. (2014).
+Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll{\'a}r, P., \&
+Zitnick, C. L. (2014).
 Microsoft COCO: Common objects in context.
 \textit{Proceedings of the European Conference on Computer Vision (ECCV)}, 740--755.
 
 \bibitem{stanforddogs}
 Khosla, A., Jayadevaprakash, N., Yao, B., \& Fei-Fei, L. (2011).
 Novel dataset for fine-grained image categorization.
-\textit{First Workshop on Fine-Grained Visual Categorization, IEEE Conference on Computer Vision and Pattern Recognition}.
+\textit{First Workshop on Fine-Grained Visual Categorization, IEEE Conference on Computer Vision and
+ Pattern Recognition}.
 
 \bibitem{knox}
-Knox, T. (n.d.). Quadruped I. Retrieved from \url{https://www.printables.com/model/1443108-quadruped-i}
+Knox, T. (n.d.). Quadruped I. Retrieved from
+\url{https://www.printables.com/model/1443108-quadruped-i}
 
 \end{thebibliography}
 
