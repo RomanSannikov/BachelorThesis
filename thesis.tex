@@ -302,20 +302,88 @@ lookup table approach rather than inverse kinematics. This method was chosen bec
 coupling in the leg design --- where hip movement affects knee angle --- makes standard analytical
 solutions impractical. The lookup table contains pre-calibrated mappings between joint angles and
 foot positions, created by setting different servo angles and measuring the resulting foot
-positions. When a target position is requested, the system identifies the nearest calibration points
-and interpolates between them using inverse distance weighting, providing smooth transitions even
-with sparse calibration data. Each servo is individually calibrated to account for mechanical
-variations and assembly differences between left and right legs. A direction multiplier ensures that
-positive commands produce consistent physical movements across all legs, while center offsets
-compensate for variations in the home position. Three distinct gaits are implemented: a crawl gait
-for statically stable locomotion, where legs move sequentially in a diagonal pattern; a trot gait
-for faster movement, where diagonal leg pairs move simultaneously; and a turning gait, where left
-and right legs move in opposite directions to generate rotational torque. Servo movements are
-interpolated over time with configurable speed, ensuring smooth motion and preventing sudden
-movements that could upset the robot's balance. All movements are defined relative to a home
-position, which serves as the reference point for calibration and initialization. Since the lookup
-table was measured for the left legs, the right legs use mirrored values to maintain symmetry in
-movement.
+positions. With the hip mounting point defined as the coordinate origin, the foot position is
+expressed in millimeters relative to this reference. The calibration data consists of 81
+measurements spanning the feasible range of hip and knee angles. Each entry records the hip angle,
+knee angle, and the corresponding foot coordinates, capturing the reachable workspace of the leg.
+When the control system requests a target foot position $(x_t, y_t)$, it locates the nearest
+calibration points in the two-dimensional position space and interpolates between them using inverse
+distance weighting. For each calibration point $i$ with foot position $(x_i, y_i)$, the Euclidean
+distance to the target is computed as
+\begin{equation}
+d_i = \sqrt{(x_t - x_i)^2 + (y_t - y_i)^2}.
+\end{equation}
+The four nearest points are selected, and a weight is assigned to each according to the inverse
+square of its distance:
+\begin{equation}
+w_i = \frac{1}{d_i^{\,2}}.
+\end{equation}
+These weights are normalized so that they sum to unity,
+\begin{equation}
+\hat{w}_i = \frac{w_i}{\sum_{j=1}^{4} w_j},
+\end{equation}
+and the interpolated joint angles are obtained as the weighted average of the corresponding
+calibration angles:
+\begin{equation}
+\theta_{\text{hip}} = \sum_{i=1}^{4} \hat{w}_i \, \theta_{\text{hip},i}, \qquad
+\theta_{\text{knee}} = \sum_{i=1}^{4} \hat{w}_i \, \theta_{\text{knee},i}.
+\end{equation}
+
+In practice, the implementation includes several practical adjustments: if the target lies within
+$0.1$~mm of a calibration point, that point is returned directly without interpolation; distances
+below $0.001$~mm are clamped to prevent division by zero; and the final interpolated angles are
+rounded to the nearest integer, since the servos accept only whole-degree commands. This method
+assigns greater influence to closer calibration points, producing smooth angle estimates even for
+positions that were not explicitly measured. The approach is particularly suitable for this
+mechanism because the mechanical coupling between the hip and knee joints --- arising from the
+linkage geometry of the leg --- precludes a closed-form analytical solution. While inverse
+kinematics is the conventional approach in robotics literature, empirical mapping provides a
+practical alternative when mechanical complexity or manufacturing tolerances make analytical models
+unreliable. The abduction joints, which control side-to-side leg movement, are not included in the
+lookup table because their motion is kinematically decoupled from the primary leg swing mechanism.
+These joints operate independently and are controlled through direct angle commands. Each servo is
+individually calibrated to account for mechanical variations and assembly differences between left
+and right legs. A direction multiplier ensures that positive commands produce consistent physical
+movements across all legs, while center offsets compensate for variations in the home position.
+Three distinct gaits are implemented: a crawl gait for statically stable locomotion, where legs move
+sequentially in a diagonal pattern; a trot gait for faster movement, where diagonal leg pairs move
+simultaneously; and a turning gait, where left and right legs move in opposite directions to
+generate rotational torque. Servo movements are interpolated over time with configurable speed,
+ensuring smooth motion and preventing sudden movements that could upset the robot's balance. All
+movements are defined relative to a home position, which serves as the reference point for
+calibration and initialization. Since the lookup table was measured for the left legs, the right
+legs use mirrored values to maintain symmetry in movement.
+
+The software architecture is organized into four functional layers. The lowest layer abstracts the
+hardware interface, managing communication with the PWM driver and providing a unified interface for
+setting servo angles. Above this sits the kinematics layer, which implements the lookup table and
+interpolation logic to translate desired foot positions into joint angles. The gait generation layer
+defines the periodic leg movement patterns --- swing and stance trajectories --- and orchestrates
+their execution across multiple legs according to the selected gait pattern. As discussed in
+Section~\ref{sec:literature-review}, statically stable gaits require that the center of gravity
+remains within the support polygon formed by the grounded feet; the crawl gait satisfies this
+criterion by moving only one leg at a time, while the trot gait achieves faster locomotion by moving
+diagonal pairs simultaneously, trading some stability margin for speed. The highest layer comprises
+the application interfaces that allow human operators to command the robot. The primary control
+interface is a web server running on the Raspberry Pi that exposes an HTTP-based remote control
+endpoint. HTTP is a request-response application protocol operating over TCP, in which the client
+(the operator's browser) initiates a connection and sends a request, and the server returns a
+response. The server listens on a dedicated port and handles two types of requests. A GET request
+to the root path returns the HTML control page, which contains a JavaScript component that captures
+keyboard events. When the operator presses a key, the script issues an asynchronous POST request
+carrying the movement command to a specific endpoint path. The server parses the request path to
+determine the desired action and, because HTTP itself is stateless, maintains an internal state
+machine to track whether the robot is idle, standing, or executing a gait. Upon receiving a movement
+command, the server transitions to the moving state and spawns a background execution thread so that
+the gait can run without blocking the communication interface. A timeout mechanism automatically
+returns the robot to a resting position if no further commands are received within a few seconds,
+preventing the robot from remaining in an active stance indefinitely. This design prioritizes
+responsiveness and simplicity, making the robot accessible to operators without requiring
+specialized control hardware or software installation. For development and debugging, separate
+command-line utilities allow individual servos to be positioned manually. These tools were essential
+during the calibration phase and for verifying mechanical assembly, as it enables direct control of
+any joint without invoking the full gait system, as well as settings servos to desired angles for
+collecing lookup measurements.
 \subsection{Models}
 \label{subsec:models}
 % Models used or developed for the quadruped.
