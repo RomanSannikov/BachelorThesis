@@ -4,6 +4,7 @@
 \usepackage{mathptmx}
 \usepackage{amsmath}
 \usepackage{geometry}
+\usepackage{tikz}
 \geometry{a4paper,margin=1in}
 \usepackage{setspace}
 \setstretch{1.5}
@@ -103,11 +104,11 @@ While the architecture and approach to train the model are important, the datase
 enable the model to reach its full potential. In this project, I utilize two of the most
 significant benchmarks in the history of object detection: Common Objects in Context (COCO) (2014)
 and Stanford Dogs (2011). The COCO dataset established the standard for detecting objects in
-"natural" settings rather than perfectly centered studio shots. It contains over 330K images, with
-more than 2.5 million labeled instances across 91 object categories, including humans, dogs, cats,
-etc., easily recognizable by a 4-year-old. The Stanford Dogs dataset ``\ldots includes over 22,000
-annotated images of dogs belonging to 120 species. Each image is annotated with a bounding box and
-object class label.''
+"natural" settings rather than perfectly centered studio shots. It contains over $330,000$ images,
+with more than $2.5$ million labeled instances across 91 object categories, including humans, dogs,
+cats, etc., easily recognizable by a 4-year-old. The Stanford Dogs dataset ``\ldots includes over
+$22,000$ annotated images of dogs belonging to 120 species. Each image is annotated with a bounding
+box and object class label.''
 
 \chapter{Methodology}
 \section{Methods and technologies used}
@@ -134,10 +135,10 @@ My requirements for the project are the following:
     \item The robot should be able to walk on flat surfaces in all directions, i.e. forward,
 backwards, sideways, and turning in place. Flat surfaces were chosen here because rough terrain
 is too complex for the hardware the project uses.
-    \item The robot should have 12 degrees of freedom (DOF) --- where each joint that can move
-independently contributes one DOF --- to allow for a variety of gaits and maneuvers. Each leg
-should have 3 DOF: hip abduction/adduction (side-to-side movement), hip flexion/extension
-(forward-backward movement), and knee flexion/extension.
+    \item The robot should have 12 degrees of freedom (DOF), where each joint that can move
+independently contributes one DOF, to allow for a variety of gaits and maneuvers. Each leg
+should have 3 DOF: hip abduction and adduction (side-to-side movement), hip flexion and extension
+(forward-backward movement), and knee flexion and extension.
     \item It should have computer vision capabilities to detect and recognize objects. For the
 sake of demonstration, I chose dogs and humans as the target objects because they represent the
 primary agents (humans) and subjects (dogs) the robot is expected to encounter and interact with.
@@ -162,8 +163,8 @@ time: PLA and PETG. PLA is a great general material for the robot itself, while 
 supporting elements. It is possible to use only PLA, and I have tried that, but PETG makes life
 easier since it does not stick to PLA, making it a perfect choice for supports. The design of the
 robot was done in Onshape, a free cloud-based CAD web software with enough functionality for the
-project. For the slicer --- software that converts 3D models into G-code instructions for the
-printer, specifying toolpaths, layer heights, and print parameters --- Bambu Lab's Bambu Studio was
+project. For the slicer, which is software that converts 3D models into G-code instructions for the
+printer, specifying toolpaths, layer heights, and print parameters, Bambu Lab's Bambu Studio was
 used as it perfectly works with the printers and has the sufficient functionality for the project.
 I have not created the initial model by myself, as it would take much more time, but rather found
 a suitable one with Creative Commons (4.0 International License) on the Internet made by Tom Knox
@@ -231,7 +232,7 @@ To achieve that, the maximum overhang angle should not exceed 45 degrees, beyond
 material would be required. Another thing to keep in mind is the clearance between the moving parts.
 Through experimentation, I found that 0.65 mm provides the best balance between smooth motion and
 minimal play, so this value was used for most clearances in the model. The height of every print was
-standard --- 0.2 mm and the support parameter was set for hanging parts like curves of the legs and
+standard, 0.2 mm, and the support parameter was set for hanging parts like curves of the legs and
 body "ribs". The final leg consists of 6 elements: motor extension, extension link, shoulder disk,
 femur, secondary link, and tibia, printed as one module. After removing it from the printer bed and 
 detaching the supports, it is movable and ready to be installed. To get to the final design, I went
@@ -241,7 +242,7 @@ design, I had to break the basic principles. For example, a support blocker is u
 block the support from being generated in the motor extension part, creating a bridging surface that
 spans a gap without support. Another example, showing the challenge of designing print-in-place
 models, is the knee. The knee joint employs a cylindrical pivot pin that is integrated into the
-tibia (lower leg), with the femur (upper leg) captured between the two halves of the tibia joint ---
+tibia (lower leg), with the femur (upper leg) captured between the two halves of the tibia joint,
 forming a sandwich-like structure. This arrangement creates overhangs on both the top and bottom
 surfaces of the femur where it interfaces with the tibia, requiring support material to be generated
 in two places: between the upper tibia surface and the femur, and between the femur and the lower
@@ -299,7 +300,7 @@ forward, and the stance phase, where the foot drives backward relative to the ch
 the ground reaction force that pushes the robot's body forward. A gait is the periodic pattern of
 these foot movements. To translate desired foot positions into servo angles, the system uses a
 lookup table approach rather than inverse kinematics. This method was chosen because the mechanical
-coupling in the leg design --- where hip movement affects knee angle --- makes standard analytical
+coupling in the leg design, where hip movement affects knee angle, makes standard analytical
 solutions impractical. The lookup table contains pre-calibrated mappings between joint angles and
 foot positions, created by setting different servo angles and measuring the resulting foot
 positions. With the hip mounting point defined as the coordinate origin, the foot position is
@@ -335,8 +336,8 @@ below $0.001$~mm are clamped to prevent division by zero; and the final interpol
 rounded to the nearest integer, since the servos accept only whole-degree commands. This method
 assigns greater influence to closer calibration points, producing smooth angle estimates even for
 positions that were not explicitly measured. The approach is particularly suitable for this
-mechanism because the mechanical coupling between the hip and knee joints --- arising from the
-linkage geometry of the leg --- precludes a closed-form analytical solution. While inverse
+mechanism because the mechanical coupling between the hip and knee joints, arising from the
+linkage geometry of the leg, precludes a closed-form analytical solution. While inverse
 kinematics is the conventional approach in robotics literature, empirical mapping provides a
 practical alternative when mechanical complexity or manufacturing tolerances make analytical models
 unreliable. The abduction joints, which control side-to-side leg movement, are not included in the
@@ -358,7 +359,7 @@ The software architecture is organized into four functional layers. The lowest l
 hardware interface, managing communication with the PWM driver and providing a unified interface for
 setting servo angles. Above this sits the kinematics layer, which implements the lookup table and
 interpolation logic to translate desired foot positions into joint angles. The gait generation layer
-defines the periodic leg movement patterns --- swing and stance trajectories --- and orchestrates
+defines the periodic leg movement patterns, swing and stance trajectories, and orchestrates
 their execution across multiple legs according to the selected gait pattern. As discussed in
 Section~\ref{sec:literature-review}, statically stable gaits require that the center of gravity
 remains within the support polygon formed by the grounded feet; the crawl gait satisfies this
@@ -383,10 +384,282 @@ specialized control hardware or software installation. For development and debug
 command-line utilities allow individual servos to be positioned manually. These tools were essential
 during the calibration phase and for verifying mechanical assembly, as it enables direct control of
 any joint without invoking the full gait system, as well as settings servos to desired angles for
-collecing lookup measurements.
-\subsection{Models}
-\label{subsec:models}
-% Models used or developed for the quadruped.
+collecting lookup measurements.
+\subsection{Object Detection Model}
+\label{subsec:object-detection-models}
+Before discussing the YOLO architecture, it is important to understand the underlying technology
+that makes it possible: the Convolutional Neural Network (CNN). A CNN is a class of deep neural
+networks specifically designed for processing grid-structured data such as images. Unlike
+traditional fully connected networks, where every neuron is connected to every neuron in the
+adjacent layer, a CNN employs convolutional layers that apply learnable filters (kernels) across
+local regions of the input. Each filter detects specific visual features of a given image,
+such as edges, textures, shapes, or increasingly abstract patterns, by computing dot products
+between the filter weights and the local pixel values. The output of this operation is a feature map that
+preserves the spatial relationships within the image. CNNs also incorporate pooling layers, which
+progressively reduce the spatial dimensions of the feature maps, thereby decreasing computational
+complexity and providing a degree of translation invariance. This hierarchical feature extraction,
+combined with weight sharing across spatial locations, makes CNNs exceptionally effective for
+computer vision tasks while requiring far fewer parameters than their fully connected counterparts.
+
+YOLO introduces the most innovative approach to object recognition. Before, systems like Deformable
+Parts Model (DPM) and Regression-based Convolutional Neural Network (R-CNN) repurposed classifiers
+to perform detection. Classifiers for each object were used to evaluate it at various locations and
+scales in a test image in a sliding windows manner or on potential bounding boxes. Then the
+post-processing stage would refine the bounding boxes and remove duplicates. Such cumbersome
+pipelines were slow and difficult to optimize because of heterogeneous nature of these components.
+The new approach that YOLO introduces uses the whole images to train the model to predict objects,
+which converts object detection to a single regression problem. This method uses a single
+convolution network to predict multiple bounding boxes and class probabilities for these boxes
+simultaneously, which make it swift by simplifying the pipeline. Unlike the aforementioned
+mechanisms, YOLO can reason globally by examining the whole image, which gives it an advantage of
+learning generalized representations of objects.
+
+The model starts by dividing the input image into $S \times S$ grid. Each grid cell is responsible
+for detecting bounding boxes, their confidence, and class probabilities. Grid cells are not limited
+to one bounding box or class, instead, they can have $B$ boxes but only one set of $C$ classes
+probabilities per cell. In the original paper the authors suggest 2 and 20 respectively on a
+$7 \times 7$ grid. Each of these bounding boxes is made up of 5 numbers: the x and y positions,
+representing the location of the center of the predicted bounding box; the width and height relative
+to the entire image size; and the confidence score, representing the predicted Intersection over
+Union (IoU) between the bounding box and the ground truth. Formally,
+\begin{equation}
+\text{confidence} = \Pr(\text{object}) \times \text{IoU}_{\text{pred}}^{\text{truth}}.
+\end{equation}
+If no object exists in the cell, the confidence score should ideally be zero. The class
+probabilities are conditioned on the cell containing an object, denoted
+$\Pr(\text{class}_i \mid \text{object})$. At test time, the class-specific confidence for each box
+is obtained by multiplying the conditional class probabilities by the box confidence:
+\begin{equation}
+\Pr(\text{class}_i \mid \text{object}) \times \Pr(\text{object}) \times
+\text{IoU}_{\text{pred}}^{\text{truth}} =
+\Pr(\text{class}_i) \times \text{IoU}_{\text{pred}}^{\text{truth}}.
+\end{equation}
+This product encodes both the probability that the box contains an object of class $i$ and how well
+the box fits the object.
+
+The network architecture borrows heavily from GoogLeNet, also known as Inception-v1. It is made up
+of 24 convolutional layers followed by 2 fully connected layers at the end. The convolutional layers
+handle feature extraction, starting with simple edges and textures and building up to more complex
+patterns, while the fully connected layers map these features to the final output tensor of size
+$S \times S \times (B \times 5 + C)$.
+
+For training, the authors chose Sum-Squared Error (SSE) as the loss function. This single loss
+covers three things at once: the accuracy of bounding box coordinates, the confidence score, and
+the class prediction. A challenge here was that most grid cells in any image do not contain an
+object, which can bias the model toward always predicting ``no object.'' To prevent this, the loss
+function applies different weights to different parts of the prediction. Coordinate errors are
+multiplied by $\lambda_{\text{coord}} = 5$ to increase their importance, while confidence errors
+for empty boxes are scaled down by $\lambda_{\text{noobj}} = 0.5$. This ensures that the network
+pays more attention to getting the boxes right when objects are actually present.
+
+Because every cell predicts multiple bounding boxes, the network naturally generates many
+overlapping detections around the same object. To deal with this, YOLO runs non-maximum suppression
+(NMS) as a post-processing step. NMS works by selecting the box with the highest confidence and
+removing any other box that overlaps with it significantly, meaning any box with a high IoU.
+The end result is a single, high-confidence bounding box per object rather than multiple
+overlapping predictions.
+
+Since its original release, YOLO has evolved through several major architectural shifts. Early
+iterations moved from pure regression to anchor-based detection, introduced batch normalization
+and multi-scale training, and adopted deeper residual backbones with feature pyramid-style
+predictions at multiple resolutions. The next wave of improvements focused on training efficiency
+and deployment accessibility: Cross-Stage Partial networks reduced computational cost, the
+ecosystem migrated from Darknet to native PyTorch, and automated augmentation and anchor
+calculation removed much of the manual tuning. More recently, the architecture has shifted toward
+anchor-free detection, decoupled classification and regression heads, and unified frameworks that
+integrate object detection with segmentation and pose estimation under a single model family. For
+this project, I decided to use the Ultralytics YOLO library with the YOLOv8 model, which implements
+a modern version of the architecture with these advancements built in. It offers a good trade-off
+between real-time performance and detection accuracy, which is critical when running on a
+resource-constrained platform like the Raspberry Pi. This setup allows the robot to reliably detect
+objects at frame rates that are sufficient for real-world interaction.
+
+As mentioned before in the requirements of the project, the selected objects to train the model on
+are dogs and humans. I chose the most significant datasets in the history of object detection: COCO
+and Stanford Dogs. COCO contains over $330,000$ images and more than $2.5$ million labeled instances
+across 91 object categories, while the latter contains over $22,000$ annotated images of dogs
+belonging to 120 species. Even though the datasets are great as they are, they should be adapted to
+the case I have, which is a close-to-ground quadruped robot. The average height of the camera of
+the robot in the standing position is $17$~cm with an upward tilt of $15^\circ$.
+
+To understand why adaptation is necessary, it helps to look at what the camera actually sees. The
+camera has a horizontal field of view of $54^\circ$ and a vertical field of view of $41^\circ$. The
+optical axis is tilted $15^\circ$ above horizontal, so the vertical field of view is split around
+this axis: the top edge of the frame is $15^\circ + 20.5^\circ = 35.5^\circ$ above horizontal, and
+the bottom edge is $15^\circ - 20.5^\circ = 5.5^\circ$ below horizontal.
+
+At a horizontal distance $d$ from the robot, the height of the top edge of the frame is
+\begin{equation}
+y_{\text{top}} = 17 + d \cdot \tan(35.5^\circ) \approx 17 + 0.713d \text{ cm},
+\end{equation}
+and the height of the bottom edge is
+\begin{equation}
+y_{\text{bottom}} = 17 - d \cdot \tan(5.5^\circ) \approx 17 - 0.096d \text{ cm}.
+\end{equation}
+The factor $0.713$ comes from $\tan(35.5^\circ)$ and the factor $0.096$ comes from
+$\tan(5.5^\circ)$. The total vertical span of the frame at distance $d$ is the difference between
+these two values, which works out to approximately $0.809d$~cm. Anything outside the band
+$[y_{\text{bottom}}, y_{\text{top}}]$ is cut off.
+
+The horizontal width of the view is determined by the $54^\circ$ horizontal field of view. With half
+of that angle being $27^\circ$, the total width is
+\begin{equation}
+w = 2d \cdot \tan(27^\circ) \approx 1.019d \text{ cm}.
+\end{equation}
+
+Figure~\ref{fig:camera-geometry} illustrates the geometry in a side view. The camera sits at
+$17$~cm above the ground and looks upward at $15^\circ$. The vertical field of view of $41^\circ$
+is split into $20.5^\circ$ above and below the optical axis, giving the top edge at $35.5^\circ$
+and the bottom edge at $5.5^\circ$ below horizontal.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Ground line
+  \draw[thick] (-1,0) -- (10,0) node[right] {Ground};
+
+  % Camera position
+  \filldraw[black] (-0.3,1.7) node[left] {Camera};
+
+  % Camera body
+  \draw[thick, fill=gray!30] (-0.3,1.5) rectangle (0.3,1.9);
+
+  % Camera height dimension
+  \draw[<->, thick, black] (0,0) -- (0,1.7);
+  \node[black, left] at (0,0.85) {$17$~cm};
+
+  % Horizontal reference line
+  \draw[dashed] (0,1.7) -- (9,1.7) node[right] {Horizontal};
+
+  % Optical axis (15 degrees up)
+  \draw[thick, blue, ->] (0,1.7) -- (8,3.84);
+  \node[blue] at (9.6,3.4) {Optical axis ($15^\circ$)};
+
+  % Top edge of FOV (35.5 degrees)
+  \draw[thick, red] (0,1.7) -- (8,7.41);
+  \node[red] at (9.6,7.0) {Top edge ($35.5^\circ$)};
+
+  % Bottom edge of FOV (5.5 degrees down)
+  \draw[thick, green!60!black] (0,1.7) -- (8,0.93);
+  \node[green!60!black] at (7.5,0.6) {Bottom edge ($-5.5^\circ$)};
+  
+  % Vertical FOV angle arc
+  \draw[thick, orange] (1.5,1.7) arc (0:35.5:1.5);
+  \node[orange] at (2.2,2.3) {$35.5^\circ$};
+  
+  % Distance markers
+  \draw[dashed, gray] (5,0) -- (5,5.3);
+  \node[gray] at (5,-0.3) {$d = 50$~cm};
+  
+  % Height markers at d=50
+  \draw[thick, red, dashed] (5,0) -- (5,5.27);
+  \filldraw[red] (5,5.27) circle (2pt);
+  \node[red, right] at (5,5.2) {$y_{\text{top}} \approx 52.7$~cm};
+
+  \draw[thick, green!60!black, dashed] (5,0) -- (5,1.22);
+  \filldraw[green!60!black] (5,1.22) circle (2pt);
+  \node[green!60!black, right] at (5,1.45) {$y_{\text{bottom}} \approx 12.2$~cm};
+  
+  % Human silhouette
+  \draw[thick, purple] (5,0) -- (5,8.5);
+  \node[purple, right] at (5,8.5) {Human ($170$~cm)};
+  
+  % Visible region shading
+  \fill[blue!10, opacity=0.3] (0,1.7) -- (8,7.4) -- (8,0.93) -- cycle;
+\end{tikzpicture}
+\caption{Side view of the camera geometry showing the vertical field of view at a distance of
+$d = 50$~cm. The shaded region represents the camera's view frustum.}
+\label{fig:camera-geometry}
+\end{figure}
+
+Figure~\ref{fig:camera-top-view} shows the horizontal field of view from above. The camera sees a
+wedge-shaped region that widens with distance.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % Ground plane
+  \fill[gray!10] (-4,0) rectangle (4,-5);
+  \draw[thick] (-4,0) -- (4,0) node[right] {Camera plane};
+
+  % Camera position
+  \filldraw[black] (0,0) circle (3pt) node[above] {Camera};
+
+  % Optical axis (straight ahead)
+  \draw[thick, blue, ->] (0,0) -- (0,-4.5);
+  \node[blue] at (1.0,-4.2) {Forward};
+
+  % Left edge of horizontal FOV
+  \draw[thick, red] (0,0) -- (-3.8,-4.5);
+  \node[red] at (-3.5,-4.9) {$27^\circ$ left};
+
+  % Right edge of horizontal FOV
+  \draw[thick, green!60!black] (0,0) -- (3.8,-4.5);
+  \node[green!60!black] at (3.5,-4.9) {$27^\circ$ right};
+
+  % Distance arcs
+  \draw[dashed, gray] (0,0) circle (1.5);
+  \node[gray] at (2.2,-1.5) {$50$~cm};
+
+  \draw[dashed, gray] (0,0) circle (3);
+  \node[gray] at (3.5,-3) {$100$~cm};
+
+  \draw[dashed, gray] (0,0) circle (4.5);
+  \node[gray] at (4.8,-4.5) {$150$~cm};
+
+  % Width labels
+  \draw[<->, thick, purple] (-2.55,-1.5) -- (2.55,-1.5);
+  \node[purple] at (0.1,-1.8) {$\approx 51$~cm};
+
+  \draw[<->, thick, purple] (-5.10,-3) -- (5.10,-3);
+  \node[purple] at (0.1,-3.3) {$\approx 102$~cm};
+
+  \draw[<->, thick, purple] (-7.64,-4.5) -- (7.64,-4.5);
+  \node[purple] at (0.1,-4.9) {$\approx 153$~cm};
+
+  % FOV angle arc
+  \draw[thick, orange] (0,-1) arc (-90:-50:1);
+  \node[orange] at (0.4,-1.235) {$27^\circ$};
+\end{tikzpicture}
+\caption{Top-down view of the horizontal field of view. The dashed circles mark distances of
+$50$~cm, $100$~cm, and $150$~cm, with the corresponding view widths shown in purple.}
+\label{fig:camera-top-view}
+\end{figure}
+
+Table~\ref{tab:camera-fov} shows the resulting numbers for a few typical distances. The
+``Visible height range'' column gives the total vertical span of the frame ($y_{\text{top}} -
+y_{\text{bottom}}$). The ``Human visible'' and ``Dog visible'' columns show what fraction of a
+standing human ($170$~cm tall) and a medium-sized dog ($50$~cm tall) actually falls inside that
+span. For example, at $d = 50$~cm the frame covers the band from $12.2$~cm to $52.7$~cm above the
+ground. A human standing there occupies $[0, 170]$~cm, so the overlap is $[12.2, 52.7]$~cm, giving
+a visible portion of $40.5$~cm or about $24$\% of the total body. A dog of height $50$~cm occupies
+$[0, 50]$~cm, so the overlap is $[12.2, 50]$~cm, giving $37.8$~cm or about $76$\% of the body.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Distance} & \textbf{Visible height range} & \textbf{Visible width} & \textbf{Human visible} & \textbf{Dog visible} \\
+\hline
+50  & 40.5  & 51.0  & $\approx$24\% & $\approx$76\%\\
+100 & 81.0  & 101.9 & $\approx$48\% & $\approx$85\%\\
+150 & 121.4 & 152.9 & $\approx$71\% & $\approx$95\%\\
+\hline
+\end{tabular}
+\caption{Camera field of view at different distances (in cm), assuming an adult human height of $170$~cm
+and a medium dog height of $50$~cm.}
+\label{tab:camera-fov}
+\end{table}
+
+The numbers make the problem clear. At the distances where the robot is likely to encounter humans
+and dogs, roughly $50$--$150$~cm, the camera captures the lower portion of humans and most of
+a dog's body. At $50$~cm, only about a quarter of a human is visible, mostly lower legs and feet.
+Dogs fare much better because of their smaller size, with three-quarters or more of the body
+typically in frame. As the distance increases, more of a human comes into view, but the perspective
+remains unusual: the camera looks up from below rather than straight on. This is a very different
+viewpoint from the standard dataset images, which are usually taken at eye level and show complete
+objects. Training on those images without adjustment would leave the model unprepared for the
+low-angle, from-below perspective that the robot actually experiences.
 
 \chapter{Results}
 \label{chap:results}
