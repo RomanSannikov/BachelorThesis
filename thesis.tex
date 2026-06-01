@@ -5,11 +5,14 @@
 \usepackage{amsmath}
 \usepackage{geometry}
 \usepackage{tikz}
+\usepackage{minted}
 \geometry{a4paper,margin=1in}
 \usepackage{setspace}
 \setstretch{1.5}
 \usepackage{hyperref}
 \usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{float}
 
 \title{Bachelor Thesis}
 \author{Roman Sannikov}
@@ -58,11 +61,11 @@ The most important thing for a quadruped robot is locomotion. The mathematical a
 shows, that there is "a unique optimum gait that maximizes static stability". The work explains
 that for static stability the center of gravity must be within the support polygon. This shape
 is formed by connecting all feet that touch the ground (contact points). Though, stability can be
-achived by dynamic means as well. The concept of dynamic stability is discussed in the 1984
+achieved by dynamic means as well. The concept of dynamic stability is discussed in the 1984
 "Experiments in Balance with a 3D One-Legged Hopping Machine", which explains the control
 algorithms: forward velocity, body altitude, and hopping height. In the recent years, compute
 became more accessible and the development of neural networks allowed to creation of simulated
-environments, in which ditigal versions of robots were put in and given a task to arrive from
+environments, in which digital versions of robots were put in and given a task to arrive from
 point A to B without being programmed to do so using Deep Reinforcement Learning (DRL). This
 approach was used in 2019 "Learning Agile and Dynamic Motor Skills for Legged Robots" for ANYmal
 robot. The researchers applied the real-world behavior of the robot's motors to the simulation
@@ -394,12 +397,13 @@ traditional fully connected networks, where every neuron is connected to every n
 adjacent layer, a CNN employs convolutional layers that apply learnable filters (kernels) across
 local regions of the input. Each filter detects specific visual features of a given image,
 such as edges, textures, shapes, or increasingly abstract patterns, by computing dot products
-between the filter weights and the local pixel values. The output of this operation is a feature map that
-preserves the spatial relationships within the image. CNNs also incorporate pooling layers, which
-progressively reduce the spatial dimensions of the feature maps, thereby decreasing computational
-complexity and providing a degree of translation invariance. This hierarchical feature extraction,
-combined with weight sharing across spatial locations, makes CNNs exceptionally effective for
-computer vision tasks while requiring far fewer parameters than their fully connected counterparts.
+between the filter weights and the local pixel values. The output of this operation is a feature map
+that preserves the spatial relationships within the image. CNNs also incorporate pooling layers,
+which progressively reduce the spatial dimensions of the feature maps, thereby decreasing
+computational complexity and providing a degree of translation invariance. This hierarchical feature
+extraction, combined with weight sharing across spatial locations, makes CNNs exceptionally
+effective for computer vision tasks while requiring far fewer parameters than their fully connected
+counterparts.
 
 YOLO introduces the most innovative approach to object recognition. Before, systems like Deformable
 Parts Model (DPM) and Regression-based Convolutional Neural Network (R-CNN) repurposed classifiers
@@ -639,14 +643,16 @@ $[0, 50]$~cm, so the overlap is $[12.2, 50]$~cm, giving $37.8$~cm or about $76$\
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\textbf{Distance} & \textbf{Visible height range} & \textbf{Visible width} & \textbf{Human visible} & \textbf{Dog visible} \\
+\textbf{Distance} & \textbf{Visible height range} & \textbf{Visible width} & \textbf{Human visible}
+& \textbf{Dog visible} \\
 \hline
 50  & 40.5  & 51.0  & $\approx$24\% & $\approx$76\%\\
 100 & 81.0  & 101.9 & $\approx$48\% & $\approx$85\%\\
 150 & 121.4 & 152.9 & $\approx$71\% & $\approx$95\%\\
 \hline
 \end{tabular}
-\caption{Camera field of view at different distances (in cm), assuming an adult human height of $170$~cm
+\caption{Camera field of view at different distances (in cm), assuming an adult human height of
+$170$~cm
 and a medium dog height of $50$~cm.}
 \label{tab:camera-fov}
 \end{table}
@@ -660,6 +666,94 @@ remains unusual: the camera looks up from below rather than straight on. This is
 viewpoint from the standard dataset images, which are usually taken at eye level and show complete
 objects. Training on those images without adjustment would leave the model unprepared for the
 low-angle, from-below perspective that the robot actually experiences.
+
+To address the issue, I create a balanced dataset by combining the original COCO and Stanford Dogs
+datasets that undergo data transformations to simulate the robot's perspective as well as to mimic
+variations in camera exposure, color calibration, and image quality. The balanced dataset contains
+cropped images of people and dogs as well as their bounding box annotations. Additionally to that,
+the dataset contains $10\%$ of negative sample images, which are images that do not contain any of
+the target objects. After preparing the dataset, I split it into training and validation sets, with
+an $80$--$20$ split, which results into $12,500$ training images, where $5,000$ contain people,
+$5,000$ contain dogs, and $2,500$ are negative samples. The validation set contains $2,500$ images:
+$1,000$ with people, $1,000$ with dogs, and $500$ negative samples.
+
+The model is trained on a MacBook Pro with an Apple M2 Pro chip with 16 core GPU. The training
+utilzes the Metal Performance Shaders (MPS) backend, which is Apple's framework, designed on top of
+Metal graphics API, for accelerating machine learning workloads on GPU. Architecturally, MPS
+abstracts the complexity of writing low-level Metal Shading Language (MSL) by providing a suite of
+pre-compiled, mathematically optimized compute kernels, which are small parallelized mathematical
+operations, such as multi-dimensional matrix multiplications and convolutional operations. The
+execution of these kernels is orchestrated by PyTorch's dynamic computational graph, which maps out
+the sequence of mathematical operations and data dependencies required by the model. When this graph
+is dispatched to the ``mps'' device backend, the framework analyzes the graph's structure to select
+and schedule the precise kernels needed for execution. This process leverages Apple Silicon’s
+Unified Memory Architecture (UMA), executing a zero-copy memory allocation scheme where the CPU and
+GPU access a singular, shared pool of physical RAM without the latency-inducing overhead of PCIe bus
+transfers. Consequently, MPS compiles these graph operations into specialized Pipeline State Objects
+(PSOs) and commits them to a Metal Command Buffer, which the hardware schedules across highly
+parallelized GPU compute cores. This tight integration Apple's hardware in PyTorch allows to use
+the full potential of the hardware, which results in significantly faster training times compared to
+CPU-only execution.
+
+An additional factor that contributes to the speed of training is the correct use of training
+parameters. After many experiments, I found that the best resulting parameters in terms of accuracy
+and training time are: batch size of $8$, epochs of $30$, $0$ workers, $0$ mosaic and disable
+validation during training. Additionally, the image size parameter is set to $320$ so the model can
+run in real-time on the Raspberry Pi. The final command for training is:
+\begin{minted}{bash}
+PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 \
+yolo detect train model=yolov8n.pt \
+data=data.yaml \
+imgsz=320 \
+batch=8 \
+epochs=30 \
+device=mps \
+workers=0 \
+mosaic=0 \
+val=False
+\end{minted}
+where:
+\begin{description}
+  \item[\texttt{PYTORCH\_MPS\_HIGH\_WATERMARK\_RATIO=0.0}] An environment variable for PyTorch's MPS
+backend; setting it to \texttt{0.0} allows the MPS allocator to use memory more aggressively to
+avoid OOM errors on Apple Silicon.
+  \item[\texttt{yolo detect train}] The Ultralytics CLI command that selects the YOLO detection task
+and starts a training run.
+  \item[\texttt{model=yolov8n.pt}] The initial weights to load (YOLOv8 Nano). This uses a small,
+fast pretrained model as a transfer-learning starting point.
+  \item[\texttt{data=data.yaml}] Path to the dataset configuration YAML describing
+training/validation image locations and class names.
+  \item[\texttt{imgsz=320}] Input image size (images are resized to 320×320). Smaller sizes reduce
+memory and speed up training at the cost of some small-object accuracy, acceptable for real-time
+applications.
+  \item[\texttt{batch=8}] Number of images processed per optimization step. Lower batch sizes reduce
+memory usage and increases training speed.
+  \item[\texttt{epochs=30}] Number of full passes over the training set.
+  \item[\texttt{device=mps}] Use the Apple Metal Performance Shaders (MPS) GPU backend on macOS
+instead of the CPU.
+  \item[\texttt{workers=0}] Disable background data loader subprocesses (safer on macOS to avoid
+multiprocessing issues).
+  \item[\texttt{mosaic=0}] Turn off Mosaic augmentation (disables the 4-image mosaic composite to
+reduce data-loading overhead).
+  \item[\texttt{val=False}] Skip running validation between epochs to speed up the training loop;
+validation can be run after training completes.
+\end{description}
+This configuration is well-optimized for training on consumer hardware while still achieving good
+accuracy. The training process typically take around $2.5$ hours to complete on this hardware. The
+recorded training curves show steady convergence: all training losses (bounding-box, class,
+and distribution focal loss) decrease consistently, which indicates the model learned from the
+data. A final validation pass (performed after training because validation was disabled during
+the loop) produced very high aggregate metrics: precision $\approx 96.5\%$, recall $\approx 94.5\%$,
+mAP@50 $\approx 98.7\%$, and mAP@50:95 $\approx 97.8\%$. At the same time the validation
+classification loss is noticeably larger than the training classification loss (val~$\approx 0.70$
+vs. train~$\approx 0.09$), suggesting some degree of overfitting on class predictions. These results
+are encouraging for a lightweight `yolov8n` model running at $320\times320$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{val_batch2_pred.jpg}
+    \caption{Validation predictions on a batch with bounding box, class, and confidence scores.}
+    \label{fig:validation-prediction}
+\end{figure}
 
 \chapter{Results}
 \label{chap:results}
