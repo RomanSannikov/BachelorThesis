@@ -24,6 +24,7 @@
 \tableofcontents
 \cleardoublepage
 
+% Abstract
 
 \chapter{Introduction}
 Over the past four decades, there was a major leap in robotics, especially in the field of
@@ -189,14 +190,19 @@ at 4.8V to 7.2V DC. On the other hand, cheaper actuators mean low precision, fee
 which are necessary for this type of project. Considering all pros and cons, these are the bare
 minimum for the project.
 
-For the main controller board, I chose Raspberry Pi 5 4GB. It is a nice little computer powerful
-enough for controlling servos and running small object recognition models. A big advantage of
-this computer is that it runs Raspberry Pi OS, which is a Linux based operating system, allowing
-fast prototyping and running existing programs and tools. The Raspberry Pi 5 offers significant
+For the main controller board, I chose Raspberry Pi 4 4GB. It is a nice little computer powerful
+enough for controlling servos and running small object recognition models with the following
+characteristics: a 1.5GHz 64-bit Broadcom BCM2711 Quad-core Cortex-A72 (ARM v8) processor with
+on-chip VideoCore VI GPU, supporting OpenGL ES 3.1 and Vulkan 1.2, Dual-band 2.4 GHz and 5.0 GHz
+IEEE 802.11ac wireless LAN (Wi-Fi 5) and Bluetooth 5.0 (BLE), a Gigabit Ethernet port, two USB 3.0
+ports and two USB 2.0 ports, a PCIe 2.0 x1 interface, 40 pin GPIO header, two 2-lane MIPI
+camera/display transceivers, a USB-C power supply port, and 4GB LPDDR4-3200 SDRAM. A big advantage
+of this computer is that it runs Raspberry Pi OS, which is a Linux based operating system, allowing
+fast prototyping and running existing programs and tools. The Raspberry Pi 4 offers significant
 improvements over its predecessor, including faster GPIO and better overall performance, making it
 well-suited for this application. The Raspberry Pi does not have enough GPIO pins to control all
 12 servos, so I went with PCA9685, a 16-channel, 12-bit PWM (Pulse Width Modulation) driver chip.
-It uses I2C communication protocol and takes just 4 Raspberry Pi GPIO pins: VCC 3V, SDA, SCL, and
+It uses I2C communication protocol and takes just 4 Raspberry Pi GPIO pins: VCC 3.3V, SDA, SCL, and
 GND. The servos consumption can spike up to 2.5A per servo, so in total it is 30A, which is way more
 than the Raspberry Pi can provide. To solve this problem, I use an external power supply, which is
 4 18650 2500 mAh Lithium-ion batteries able to produce enough current for the servos. Connected in
@@ -750,10 +756,17 @@ vs. train~$\approx 0.09$), suggesting some degree of overfitting on class predic
 are encouraging for a lightweight `yolov8n` model running at $320\times320$.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{val_batch2_pred.jpg}
+    \includegraphics[width=0.8\textwidth]{val_batch2_pred.jpg} % Replace with the latest benchmark
     \caption{Validation predictions on a batch with bounding box, class, and confidence scores.}
     \label{fig:validation-prediction}
 \end{figure}
+
+% Add:
+% - physical metrics: speed, torque, stride length, power consumption, etc.
+% - model metrics
+% - cost
+% - links to the code and the model
+% - raw data sample of calibration, lookup-table format, samples, etc.
 
 \chapter{Results}
 \label{chap:results}
