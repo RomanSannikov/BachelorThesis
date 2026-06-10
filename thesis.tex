@@ -204,12 +204,12 @@ well-suited for this application. The Raspberry Pi does not have enough GPIO pin
 12 servos, so I went with PCA9685, a 16-channel, 12-bit PWM (Pulse Width Modulation) driver chip.
 It uses I2C communication protocol and takes just 4 Raspberry Pi GPIO pins: VCC 3.3V, SDA, SCL, and
 GND. The servos consumption can spike up to 2.5A per servo, so in total it is 30A, which is way more
-than the Raspberry Pi can provide. To solve this problem, I use an external power supply, which is
-4 18650 2500 mAh Lithium-ion batteries able to produce enough current for the servos. Connected in
-a 2S2P configuration (two series pairs in parallel), they provide 7.4V with a total capacity of
-5000 mAh. With that the potential difference is larger than what the servos and Raspberry Pi can
-handle, so I use buck converters to step down the voltage to 7V for the servos and 5V for
-the Raspberry Pi.
+than the Raspberry Pi can provide. To solve this problem, I decided to use an external power supply,
+which is 4 18650 2500 mAh Lithium-ion batteries able to produce enough current for the servos.
+Connected in a 2S2P configuration (two series pairs in parallel), they provide 7.4V with a total
+capacity of 5000 mAh. With that the potential difference is larger than what the servos and
+Raspberry Pi can handle, so I use buck converters to step down the voltage to 7V for the servos and
+5V for the Raspberry Pi.
 
 For the computer vision part, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
 an OmniVision OV5647 Color CMOS sensor. The camera has a 3.6 mm focal length lens with a
