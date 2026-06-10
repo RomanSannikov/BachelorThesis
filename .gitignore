@@ -5,3 +5,6 @@
 *.out
 *.synctex.gz
 *.toc
+.DS_Store
+*.jpg_original
+_minted/

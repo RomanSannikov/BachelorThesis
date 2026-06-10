@@ -266,6 +266,16 @@ In total, printing the complete model requires approximately 20.5 hours and 490 
 The body takes 7 hours and 154 grams, each of the four legs requires 3 hours and 74 grams, and the
 eight servo holders together take 1.5 hours and 40 grams.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{leg printing process.jpg}
+    \caption{Half-through printing process of an experimental leg on an Bambu Lab A1 3D printer.
+Tibia is on the left, support for the femur and secondary link is in the middle, and the motor
+extension, extension link, and shoulder disk are on the top. The image perfecly demonstrates how the
+print-in-place leg is designed inside.}
+    \label{fig:experimental-leg}
+\end{figure}
+
 When the whole model was stable and ready, I started assembling it all together. With the experience
 I gained, it would take around one hour to assemble everything. Connecting PCA9685 to the Raspberry
 Pi was a straightforward process. The control pin connection layout is the following: VCC to 3.3V,
@@ -303,6 +313,15 @@ the back side of the femur. Ultimately, the horns are connected to the hip and m
 respectively. The same procedure is repeated for all four legs. After that, the electronics are
 installed inside the body and the Raspberry Pi camera module is mounted to the front camera slot.
 With the mechanical assembly complete, the control software can command movement.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{legs.jpg} % Replace with the latest benchmark
+    \caption{On the left is are front sides of the legs. In the middle is the back side of the leg
+with connected horns. On the right is the hip abduction and knee flextion servos attached together
+with the servo holders.}
+    \label{fig:legs}
+\end{figure}
 
 A step consists of two phases: the swing phase, where the leg is parabolically lifted and moved
 forward, and the stance phase, where the foot drives backward relative to the chassis, generating
@@ -394,6 +413,14 @@ command-line utilities allow individual servos to be positioned manually. These 
 during the calibration phase and for verifying mechanical assembly, as it enables direct control of
 any joint without invoking the full gait system, as well as settings servos to desired angles for
 collecting lookup measurements.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{robot.jpg}
+    \caption{Semi-assembled standing quadruped robot without a camera module powered by a lab power supply
+and a power plug behind it. The wires are not yet organized.}
+    \label{fig:robot}
+\end{figure}
 \subsection{Object Detection Model}
 \label{subsec:object-detection-models}
 Before discussing the YOLO architecture, it is important to understand the underlying technology
@@ -703,20 +730,18 @@ CPU-only execution.
 
 An additional factor that contributes to the speed of training is the correct use of training
 parameters. After many experiments, I found that the best resulting parameters in terms of accuracy
-and training time are: batch size of $8$, epochs of $30$, $0$ workers, $0$ mosaic and disable
-validation during training. Additionally, the image size parameter is set to $320$ so the model can
-run in real-time on the Raspberry Pi. The final command for training is:
+and training time are: batch size of $8$, epochs of $50$, and $0$ workers. Additionally, the image
+size parameter is set to $320$ so the model can run in real-time on the Raspberry Pi. The final
+command for training is:
 \begin{minted}{bash}
 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 \
 yolo detect train model=yolov8n.pt \
 data=data.yaml \
 imgsz=320 \
 batch=8 \
-epochs=30 \
+epochs=50 \
 device=mps \
-workers=0 \
-mosaic=0 \
-val=False
+workers=0
 \end{minted}
 where:
 \begin{description}
@@ -734,15 +759,11 @@ memory and speed up training at the cost of some small-object accuracy, acceptab
 applications.
   \item[\texttt{batch=8}] Number of images processed per optimization step. Lower batch sizes reduce
 memory usage and increases training speed.
-  \item[\texttt{epochs=30}] Number of full passes over the training set.
+  \item[\texttt{epochs=50}] Number of full passes over the training set.
   \item[\texttt{device=mps}] Use the Apple Metal Performance Shaders (MPS) GPU backend on macOS
 instead of the CPU.
   \item[\texttt{workers=0}] Disable background data loader subprocesses (safer on macOS to avoid
 multiprocessing issues).
-  \item[\texttt{mosaic=0}] Turn off Mosaic augmentation (disables the 4-image mosaic composite to
-reduce data-loading overhead).
-  \item[\texttt{val=False}] Skip running validation between epochs to speed up the training loop;
-validation can be run after training completes.
 \end{description}
 This configuration is well-optimized for training on consumer hardware while still achieving good
 accuracy. The training process typically take around $2.5$ hours to complete on this hardware. The
