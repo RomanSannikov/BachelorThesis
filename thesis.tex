@@ -47,92 +47,108 @@ Computer Vision\par}
 % Abstract
 
 \chapter{Introduction}
-Over the past four decades, there was a major leap in robotics, especially in the field of
-quadrupeds. Many great papers developing the domain were published leading to significant
-advancements. The jump was from early days one-legged hopping machines to a four-legged "trotting"
-robots able to traverse through difficult terrain and obstacles, and even autonomous navigation in
-unstructured environments. Legged locomotion showed that it is one of the most versatile forms of
-mobility. But most of the research was done in labs, requiring substantial resources for prototyping
-and pushing the boundaries of the domain, which creates a gap between lab research and
-consumer-level accessibility.
+Over the past four decades, there has been a major leap in robotics, especially in the field of
+quadruped robots. Many important papers developing the field have been published, leading to
+significant advancements. The development progressed from early one-legged hopping machines to
+four-legged trotting robots able to traverse difficult terrain and obstacles, and later to
+autonomous navigation in unstructured environments. Legged locomotion has shown itself to be one
+of the most versatile forms of mobility. However, most of this research was conducted in
+laboratories, requiring substantial resources for prototyping and pushing the boundaries of the
+field. This creates a gap between laboratory research and consumer-level accessibility.
 
 The objective of this thesis is to address that gap by designing, constructing, and controlling
 a quadruped robot as an integrated project. The work covers the full development pipeline:
 mechanical design using modern CAD tools and 3D printing, selection and characterization of
 actuators, implementation of statically stable gaits based on established stability criteria,
-development of a control system, integration of computer vision, and validation through physical
-experiments. By following this end-to-end process, the thesis demonstrates how classical locomotion
-and computer vision principles can be realized on a budget-friendly platform.
+development of a control system, integration of computer vision, and preparation for physical
+validation. By following this end-to-end process, the thesis aims to demonstrate how classical
+locomotion and computer vision principles can be realized on a budget-friendly platform.
 
 A deliberate choice was made to use low-cost, commercially available components and
-rapid-prototyping techniques wherever possible. This decision was not driven by cost
-reduction alone; rather, it ensures that the resulting platform is reproducible.
-In this paper, I would like to review the research and practical achievements that have been done
-throughout the years and combine it in a project, the cost of which will be less. The idea is to
-establish a base for low-cost quadruped robots to make them more affordable for day-to-day use in
-different fields of human lives.
+rapid-prototyping techniques wherever possible. This decision was not driven by cost reduction
+alone; it also helps ensure that the resulting platform is reproducible. In this paper, I review
+research and practical achievements made throughout the years and combine them in one project at a
+lower cost. The idea is to establish a base for low-cost quadruped robots and make them more
+affordable for day-to-day use in different fields of everyday life.
 
 \section{Literature review}
 \label{sec:literature-review}
-There is a number of "classical" papers that can be used to lay the foundation for this project.
-They vary from gaits and control to computer vision and successful real-world examples.
+There are several ``classical'' papers that can be used as a basis for this project. They cover
+topics ranging from gaits and control to computer vision and successful real-world systems.
 
-The most important thing for a quadruped robot is locomotion. The mathematical analysis in the 1968
-"On the stability properties of quadruped creeping gaits" Mathematical Biosciences journal article
-shows, that there is "a unique optimum gait that maximizes static stability". The work explains
-that for static stability the center of gravity must be within the support polygon. This shape
-is formed by connecting all feet that touch the ground (contact points). Though, stability can be
-achieved by dynamic means as well. The concept of dynamic stability is discussed in the 1984
-"Experiments in Balance with a 3D One-Legged Hopping Machine", which explains the control
-algorithms: forward velocity, body altitude, and hopping height. In the recent years, compute
-became more accessible and the development of neural networks allowed to creation of simulated
-environments, in which digital versions of robots were put in and given a task to arrive from
-point A to B without being programmed to do so using Deep Reinforcement Learning (DRL). This
-approach was used in 2019 "Learning Agile and Dynamic Motor Skills for Legged Robots" for ANYmal
-robot. The researchers applied the real-world behavior of the robot's motors to the simulation
-that allowed the simulation to be more realistic and helped the robot learn imperfect nuances of
-the world.
+The most important capability of a quadruped robot is locomotion. The mathematical analysis in the
+1968 \textit{Mathematical Biosciences} article ``On the stability properties of quadruped creeping
+gaits'' shows that there is ``a unique optimum gait that maximizes static
+stability''~\cite{mcghee1968}. The work explains that static stability requires the projection of
+the center of gravity onto the ground to remain within the support polygon. This polygon is formed
+by connecting all feet that are in contact with the ground, where each foot represents one contact
+point.
+
+However, stability can also be achieved by dynamic means. The concept of dynamic stability is
+discussed in the 1984 article ``Experiments in Balance with a 3D One-Legged Hopping Machine'',
+which describes control algorithms for forward velocity, body attitude, and hopping
+height~\cite{raibert1984}. Unlike static locomotion, dynamic locomotion allows the center of gravity
+to move outside the support region for short periods. Balance is then maintained through continuous
+motion and active control rather than through a permanently stable body position. Moving the
+projection of the center of gravity outside the support region causes the robot to start falling.
+During this falling motion, the robot places its feet to catch itself, and repeating this sequence
+creates a dynamic gait. In other words, dynamic stability is continuous falling and catching.
+
+In recent years, computing power has become more accessible, while the development of neural
+networks has enabled the creation of increasingly realistic simulated environments. Digital
+versions of robots can be placed in these environments and given a task, such as moving from point
+A to point B, without receiving an explicitly programmed sequence of joint movements. Instead, the
+robot learns a movement policy by interacting with the simulated environment through Deep
+Reinforcement Learning (DRL). This approach was used for the ANYmal robot in the 2019 article
+``Learning Agile and Dynamic Motor Skills for Legged Robots''~\cite{hwangbo2019}. The researchers
+incorporated the real-world behavior of the robot's motors into the simulation. This made the
+simulation more realistic and helped the learned policy account for motor imperfections and other
+differences between the simulated and physical systems.
 
 While the theoretical foundations establish how quadruped locomotion works, several landmark systems
-demonstrate what is achievable with mature engineering. Boston Dynamics' BigDog (2008) was the first
-to demonstrate load-carrying dynamic locomotion on rough terrain, proving quadrupeds could operate
-in real-world conditions outside the lab. It was a direct descendant of the 1984 hopping machine
-experiments and it made evident that dynamic stability is the key to traversing challenging terrain.
-Similarly, MIT's Cheetah 3 (2018) showed that model-based control could achieve robust blind
-locomotion over obstacles. These systems represented the state-of-the-art capability of quadruped
-robots at their time. The projects were sponsored by DARPA and MIT respectively and did not focus
-on cost reduction, but rather on pushing the boundaries of what quadruped robots could do.
+demonstrate what is achievable with mature engineering. Boston Dynamics' BigDog demonstrated
+load-carrying dynamic locomotion on rough terrain and was one of the first systems to show that
+quadrupeds could operate in real-world conditions outside the laboratory~\cite{bigdog}. It directly
+continued ideas from the 1984 hopping-machine experiments and made it evident that dynamic
+stability is the key to traversing challenging terrain.
+Similarly, MIT's Cheetah 3 showed that model-based control could achieve robust blind locomotion
+over obstacles~\cite{cheetah3}. These systems represented state-of-the-art quadruped capabilities
+at the time. The projects were sponsored by DARPA and MIT, respectively, and did not focus on cost
+reduction, but rather on pushing the boundaries of what quadruped robots could do.
 
 Another key component of the project is computer vision. Generally, robots can be controlled by a
 human operator, which remains a very practical approach. However, computer vision is a significant
 step towards autonomy and high-level task execution. Vision is critical for navigation, obstacle
 avoidance, and interaction with the environment. For this project, I decided to use YOLO,
-a state-of-the-art object detection model, based on the "You Only Look Once" (2016) architecture,
-which was a game-changer in the field of real-time object detection. The model divides the image
-into a grid, and each grid cell is responsible for predicting bounding boxes, confidence score, and
-class probabilities of an object whose center falls into that cell. As described in the paper:
+a real-time object detection model based on the You Only Look Once
+architecture~\cite{yolo}. The original model divides an image into a grid, and each grid cell is
+responsible for predicting bounding boxes, confidence scores, and class probabilities for an
+object whose center falls into that cell. As described in the paper:
 ``[The] network architecture is inspired by the GoogLeNet model for image classification\ldots\ [It]
 has 24 convolutional layers followed by 2 fully connected layers. Instead of the inception modules
 used by GoogLeNet,\ldots [it simply uses] $1 \times 1$ reduction layers followed by $3 \times 3$
-convolutional layers\ldots''. The original YOLO uses the Sum-Squared Error (SSE) loss function
-between the predictions and the ground truth. While the architecture has evolved significantly in
-subsequent versions to utilize CSPDarknet, a high-performance convolutional neural network backbone,
-and advanced loss functions, the fundamental principle of grid-based single-pass detection remains
-the core of the model used in this project. Additionally, it is worth mentioning Object Detection
-with Discriminatively Trained Part Based Models (2010), which is a classic paper on training models
-to recognize objects based on their parts, because quadruped robots usually have limited field of
-view due to their height. Applying the logic of part-based modeling to train a model to recognize
-an object by its lower part is crucial for the robot to "understand" the environment.
+convolutional layers\ldots''~\cite{yolo}. The original YOLO uses a Sum-Squared Error (SSE) loss
+function between predictions and ground truth. While the architecture has evolved significantly,
+some later YOLO versions adopted CSPDarknet,
+a high-performance convolutional neural network backbone, together with more advanced loss
+functions. Other versions use different backbones, feature-aggregation methods, and detection
+heads. Nevertheless, single-pass detection remains a central principle.
 
-While the architecture and approach to train the model are important, the datasets used for training
-enable the model to reach its full potential. In this project, I utilize two of the most
-significant benchmarks in the history of object detection: Common Objects in Context (COCO) (2014)
-and Stanford Dogs (2011). The COCO dataset established the standard for detecting objects in
-"natural" settings rather than perfectly centered studio shots. It contains over $330,000$ images,
-with more than $2.5$ million labeled instances across 91 object categories, including humans, dogs,
-cats, etc., easily recognizable by a 4-year-old. The Stanford Dogs dataset ``\ldots includes over
-$22,000$ annotated images of dogs belonging to 120 species. Each image is annotated with a bounding
-box and object class label.''
+Additionally, it is worth mentioning ``Object Detection with Discriminatively Trained Part-Based
+Models''~\cite{felzenszwalb2010}. This classical paper describes how objects can be detected from
+their individual parts. The concept is relevant to this project because the robot's low camera
+position may allow it to see only the lower part of a person or another object. Training the model
+to recognize partially visible objects helps the robot detect objects from its unusual viewpoint.
+
+While the model architecture and the approach to training it are important, the datasets used for
+training enable the model to reach its full potential. In this project, I utilize two of the most
+significant benchmarks in the history of object detection: Common Objects in Context
+(COCO)~\cite{coco} and Stanford Dogs~\cite{stanforddogs}. COCO established the standard for
+detecting objects in ``natural'' settings rather than perfectly centered studio shots. It contains
+more than $330,000$ images, of which over $200,000$ are labelled, with approximately $1.5$ million
+object instances across 80 object categories, including people, dogs, and cats. The Stanford Dogs
+dataset contains $20,580$ annotated images of dogs belonging to 120 breeds. Each image is annotated
+with a bounding box and a class label.
 
 \chapter{Methodology}
 \section{Methods and technologies used}
@@ -147,213 +163,248 @@ technologies and models selected to address them.
 
 \subsection{Project requirements}
 \label{subsec:project-requirements}
-There are quite a lot of requirements and limitations in this project as it seeks to demonstrate
-a way to develop a low-cost quadruped robot. There are three big groups of limitations that define
-requirements. The first, and most significant, is cost. It influences the other group which is
-the hardware. The hardware, limited by cost, in turn constrains the software and algorithms. All
-together they create a really tight framework for the project, which is a good thing since it
-forces to creativity and finding new solutions.
+There are several requirements and limitations in this project, as it seeks to demonstrate a way
+to develop a low-cost quadruped robot. Three main groups of limitations define the requirements.
+The first, and most significant, is cost. It influences the second group, which is hardware. The
+hardware, limited by cost, in turn constrains the software and algorithms. Together, they create a
+tight framework for the project, which is beneficial because it encourages creativity and finding
+new solutions.
 
 My requirements for the project are the following:
 \begin{itemize}
-    \item The robot should be able to walk on flat surfaces in all directions, i.e. forward,
-backwards, sideways, and turning in place. Flat surfaces were chosen here because rough terrain
-is too complex for the hardware the project uses.
+    \item The robot should be able to walk on flat surfaces in all directions: forward, backward,
+  sideways, and turning in place. Flat surfaces were selected because rough terrain is too
+  challenging for the hardware used in this project.
     \item The robot should have 12 degrees of freedom (DOF), where each joint that can move
 independently contributes one DOF, to allow for a variety of gaits and maneuvers. Each leg
 should have 3 DOF: hip abduction and adduction (side-to-side movement), hip flexion and extension
 (forward-backward movement), and knee flexion and extension.
-    \item It should have computer vision capabilities to detect and recognize objects. For the
-sake of demonstration, I chose dogs and humans as the target objects because they represent the
-primary agents (humans) and subjects (dogs) the robot is expected to encounter and interact with.
-	\item The robot should be easy to assemble and reproduce by others. The components should
-be available, affordable, and designed with swappability in mind to allow for future upgrades and/or
-repairs.
+    \item It should have computer vision capabilities to detect objects. For the sake of
+demonstration, I chose people and dogs as the target classes because the robot is expected to
+encounter and interact with them.
+    \item The robot should be easy to assemble and reproduce by others. The components should be
+  available, affordable, and designed with swappability in mind to allow future upgrades and
+  repairs.
 \end{itemize}
 
-On the limitation side, the cost of the whole project should not exceed 300 EUR, which is quite
-limiting for the result the project wants to achieve.
+On the limitation side, the total cost of the project should not exceed 300 EUR\@. This
+significantly limits what the project can achieve.
 
-The hardware and software choices are affected by this limitation and the technology selection
-will be discussed in the next section.
-\subsection{Technologies selection}
+The hardware and software choices are affected by this limitation, and the technology selection is
+discussed in the next section.
+\subsection{Technology selection}
 \label{subsec:technology-selection}
-Everything starts with the model. Nowadays, 3D printers are quite accessible for people making them
-a great choice for the project since it allows producing custom elements perfectly fitting and
-satisfying the requirements and at the same time being easily reproducible by the others. At my
-disposal were Bambu Lab printers A1 mini, X1C Carbon and H2D series. I tried them all and settled
-on the last one since it has two nozzles, allowing the use of two types of filament at the same
-time: PLA and PETG. PLA is a great general material for the robot itself, while PETG was used for
-supporting elements. It is possible to use only PLA, and I have tried that, but PETG makes life
-easier since it does not stick to PLA, making it a perfect choice for supports. The design of the
-robot was done in Onshape, a free cloud-based CAD web software with enough functionality for the
-project. For the slicer, which is software that converts 3D models into G-code instructions for the
-printer, specifying toolpaths, layer heights, and print parameters, Bambu Lab's Bambu Studio was
-used as it perfectly works with the printers and has the sufficient functionality for the project.
-I have not created the initial model by myself, as it would take much more time, but rather found
-a suitable one with Creative Commons (4.0 International License) on the Internet made by Tom Knox
-and modified it to fit the requirements. The requirements not met by the initial model were 12 DOF
-and ease of assembly. What the original model did provide was a solid base and design I wanted,
-3 DOF per front leg, and a place for the camera module.
+Everything starts with the model. Nowadays, 3D printers are quite accessible, making them a great
+choice for this project because they allow custom parts to be produced according to the design
+requirements while remaining reproducible by others. At my disposal were the Bambu Lab A1 mini,
+X1 Carbon, and H2D printers. I tried them all and settled on the H2D because it has two nozzles,
+allowing PLA and PETG to be used in the same print. PLA is a suitable general-purpose material for
+the robot itself, while PETG is used for support interfaces. It is possible to use only PLA, and I
+tested that approach, but PETG makes support removal easier because it does not bond strongly to
+PLA\@. I designed the robot in Onshape, a free cloud-based CAD web application with sufficient
+functionality for this project. For the slicer, I used Bambu Studio, which works well with the
+printers and provides the required functionality. A slicer converts 3D models into G-code,
+specifying toolpaths, layer heights, support placement, and other print parameters.
+
+I did not create the initial model myself, as doing so would require much more time. Instead, I
+used a suitable model by Tom Knox, published under a Creative Commons 4.0 license, and modified it
+to meet the requirements~\cite{knox}. The requirements not met by the initial model were 12 DOF
+and ease of assembly. What the original model did provide was the base design I wanted, three DOF
+in each front leg, and a place for the camera module.
 
 What made the original 3D model hard to assemble was the fact that it consisted of 149 unique parts
-connected by different types of screws. The most problematic part was the leg. All four legs are the
-same just mirrored, which made redesigning much easier. To reduce complexity of assembly, I
-redesigned legs and the body to be print-in-place, meaning ready to use parts without the need of
-additional assembly. I also reduced the number of unique screws in the project to just 1 type, which
-is M3 of two sizes.
+connected by different types of screws. The most problematic part was the leg. All four legs are
+the same, just mirrored, which made redesigning much easier. To reduce assembly complexity, I
+redesigned the legs and body to be print-in-place, meaning ready-to-use parts without the need for
+additional assembly. I also reduced the number of unique screws in the project to one type, M3, in
+two sizes.
 
-For the actuators, I chose WS-MG996R digital servos with metal gears, which are widely used in hobby
-robotics, 3 per leg, which gives 12 DOF in total. These servos are really affordable and deliver
-\(11 \text{ kg}\cdot\text{cm}\) stall torque with a speed of 0.17--0.14 seconds per 60°, operating
-at 4.8V to 7.2V DC. On the other hand, cheaper actuators mean low precision, feedback, and torque,
-which are necessary for this type of project. Considering all pros and cons, these are the bare
-minimum for the project.
+For the actuators, I chose WS-MG996R digital servos with metal gears, which are widely used in
+hobby robotics. Three servos per leg provide 12 DOF in total. These servos are affordable and
+provide a specified stall torque of \(9.4\,\mathrm{kgf}\mathbin{\cdot}\mathrm{cm}\) at 4.8 V and
+\(11\,\mathrm{kgf}\mathbin{\cdot}\mathrm{cm}\) at 6 V. The latter is approximately
+\(1.08\,\mathrm{N}\mathbin{\cdot}\mathrm{m}\). Their specified speed is $0.17$ seconds per
+$60^\circ$ at 4.8 V and $0.14$ seconds per $60^\circ$ at 6 V, and their specified operating
+voltage range is 4.8--7.2 V. However, these low-cost actuators have limited precision
+and torque, and they do not expose position feedback to the controller. Considering these
+limitations, they are the minimum suitable option for this project.
 
-For the main controller board, I chose Raspberry Pi 4 4GB. It is a nice little computer powerful
-enough for controlling servos and running small object recognition models with the following
-characteristics: a 1.5GHz 64-bit Broadcom BCM2711 Quad-core Cortex-A72 (ARM v8) processor with
-on-chip VideoCore VI GPU, supporting OpenGL ES 3.1 and Vulkan 1.2, Dual-band 2.4 GHz and 5.0 GHz
-IEEE 802.11ac wireless LAN (Wi-Fi 5) and Bluetooth 5.0 (BLE), a Gigabit Ethernet port, two USB 3.0
-ports and two USB 2.0 ports, a PCIe 2.0 x1 interface, 40 pin GPIO header, two 2-lane MIPI
-camera/display transceivers, a USB-C power supply port, and 4GB LPDDR4-3200 SDRAM. A big advantage
-of this computer is that it runs Raspberry Pi OS, which is a Linux based operating system, allowing
-fast prototyping and running existing programs and tools. The Raspberry Pi 4 offers significant
-improvements over its predecessor, including faster GPIO and better overall performance, making it
-well-suited for this application. The Raspberry Pi does not have enough GPIO pins to control all
-12 servos, so I went with PCA9685, a 16-channel, 12-bit PWM (Pulse Width Modulation) driver chip.
-It uses I2C communication protocol and takes just 4 Raspberry Pi GPIO pins: VCC 3.3V, SDA, SCL, and
-GND. The servos consumption can spike up to 2.5A per servo, so in total it is 30A, which is way more
-than the Raspberry Pi can provide. To solve this problem, I decided to use an external power supply,
-which is 4 18650 2500 mAh Lithium-ion batteries able to produce enough current for the servos.
-Connected in a 2S2P configuration (two series pairs in parallel), they provide 7.4V with a total
-capacity of 5000 mAh. With that the potential difference is larger than what the servos and
-Raspberry Pi can handle, so I use buck converters to step down the voltage to 7V for the servos and
-5V for the Raspberry Pi.
+For the main controller, I chose a Raspberry Pi 4 Model B with 4 GB of RAM\@. It is
+powerful enough to control the servos and run a small object detection model. It uses a 64-bit
+Broadcom BCM2711
+quad-core Cortex-A72 processor running at up to 1.8 GHz and a VideoCore VI GPU with support for
+OpenGL ES 3.1 and Vulkan 1.0. It also provides dual-band Wi-Fi, Bluetooth 5.0 BLE, Gigabit Ethernet,
+two USB 3.0 ports, two USB 2.0 ports, a 40-pin GPIO header, a two-lane MIPI CSI camera port, a
+two-lane MIPI DSI display port, USB-C power input, and 4 GB LPDDR4-3200 SDRAM\@. A big advantage of
+this computer is that it runs Raspberry Pi OS, a Linux-based operating system that allows fast
+prototyping and the use of existing programs and development tools~\cite{raspberrypi4}.
 
-For the computer vision part, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
-an OmniVision OV5647 Color CMOS sensor. The camera has a 3.6 mm focal length lens with a
+The Raspberry Pi provides enough general-purpose pins for 12 control signals, but only a small
+number support hardware PWM\@. Software-generated PWM under Linux can also have timing jitter. I
+therefore used a PCA9685, a 16-channel, 12-bit PWM driver that generates stable servo signals in
+hardware. It communicates over I2C using two signal lines: SDA on GPIO 2 and SCL on GPIO 3. It is
+also connected to 3.3 V for logic power and to a common ground~\cite{pca9685}.
+
+The specified stall current is 2.5 A per servo at 6 V. Using this value, a theoretical
+simultaneous stall of all 12 servos would require 30 A, although this is not the normal operating
+current. To power the robot, I decided to use a battery pack made from four 2500 mAh 18650
+lithium-ion batteries. Connected in a 2S2P configuration (two series pairs in parallel),
+they provide a nominal voltage of 7.4 V and a total nominal capacity of 5000 mAh. Since the
+Raspberry Pi requires a 5 V supply, I use buck converters to provide 7 V for the servos and 5 V for
+the Raspberry Pi.
+
+For computer vision, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
+an OmniVision OV5647 color CMOS sensor. The camera has a 3.6 mm focal length lens with a
 $54^\circ \times 41^\circ$
 angle of view, providing a horizontal field of view roughly equal to the distance from the subject
-at typical operating ranges. The camera uses a CSI ribbon cable to connect to the high-speed,
-dual-purpose MIPI port on the Raspberry Pi, offering lower latency and CPU overhead compared to
-USB cameras.
+at typical operating ranges. The camera uses a CSI ribbon cable to connect to the dedicated MIPI
+CSI port on the Raspberry Pi, offering lower communication overhead than a typical USB camera.
 
 On the software side, I use Python as the main programming language. It is a great choice for rapid
-prototyping and has a huge ecosystem of libraries for robotics, computer vision, and machine
+prototyping and has a large ecosystem of libraries for robotics, computer vision, and machine
 learning. For controlling the servos, I use the Adafruit PCA9685 library, which provides a simple
-interface for sending PWM (Pulse Width Modulation) signals to the servos. PWM varies the duty
-cycle of a square wave to control the average voltage delivered, with pulse widths typically
-ranging from 1 to 2 milliseconds corresponding to 0 to 180 degrees of servo rotation. For object
-detection, I use the Ultralytics YOLO library, which offers a streamlined interface for YOLO-based
-inference and integrates well with the Raspberry Pi platform.
+interface for generating PWM control signals. PWM control does not regulate the servo's supply
+voltage. Instead, the pulse width encodes the requested position. Typical control pulses range from
+approximately 1 to 2 milliseconds and are repeated at a fixed rate. The exact pulse-to-angle range
+depends on servo calibration. For object detection, I use the Ultralytics YOLO library, which
+offers a streamlined interface for YOLO training and inference and integrates well with the
+Raspberry Pi platform.
 \subsection{Implementation}
 \label{subsec:implementation}
-The implementation started by downloading the original model and printing the most important
-part --- the leg. The leg model consisted of 7 parts, which took the printer around 3 hours. After,
-I assembled the leg, attached the hip to a servo and connected the servo directly to the Raspberry
-Pi with jumper wires. Printing it and testing that the leg works was a crucial step that helped me
-to verify that the model is capable of moving and having the physical model helped me understand
-what needed to be changed. Later, I started redesigning the leg to be print-in-place. First of all,
-it is important to understand the principles of such design. The most important idea is that there
-should be no overhanging parts, meaning that all the parts should be supported by the print itself.
-To achieve that, the maximum overhang angle should not exceed 45 degrees, beyond which support
-material would be required. Another thing to keep in mind is the clearance between the moving parts.
+The implementation started by downloading the original model and printing its most important part:
+the leg. The original leg model consisted of seven parts and took around three hours to print.
+Afterward, I assembled the leg, attached the hip to a servo, and connected the servo to the
+Raspberry Pi with jumper wires for an initial test. Printing and testing the leg was a crucial step
+that helped me verify that the model could move. Having the physical model also helped me understand
+what needed to be changed.
+
+Later, I started redesigning the leg to be print-in-place. First of all, it is important to
+understand the principles of such a design. The most important idea is that unsupported overhangs
+should be minimized, meaning that the parts should be supported by the print itself where possible.
+To achieve this, I used $45^\circ$ as a practical overhang limit, beyond which support material was
+generally required. Another thing to keep in mind is the clearance between the moving parts.
 Through experimentation, I found that 0.65 mm provides the best balance between smooth motion and
-minimal play, so this value was used for most clearances in the model. The height of every print was
-standard, 0.2 mm, and the support parameter was set for hanging parts like curves of the legs and
-body "ribs". The final leg consists of 6 elements: motor extension, extension link, shoulder disk,
-femur, secondary link, and tibia, printed as one module. After removing it from the printer bed and 
+minimal play, so this value was used for most clearances in the model. The layer height for every
+print was 0.2 mm, and support material was enabled for overhanging parts such as the curves of the
+legs and the body ``ribs''.
+
+The final leg consists of six elements: motor extension, extension link, shoulder disk, femur,
+secondary link, and tibia, printed as one module. After removing it from the printer bed and
 detaching the supports, it is movable and ready to be installed. To get to the final design, I went
 through around twenty iterations of the leg and a couple of iterations of the body. Several design
-challenges emerged during these iterations and to achieve the requirements while using the same
-design, I had to break the basic principles. For example, a support blocker is used for the leg to
-block the support from being generated in the motor extension part, creating a bridging surface that
-spans a gap without support. Another example, showing the challenge of designing print-in-place
-models, is the knee. The knee joint employs a cylindrical pivot pin that is integrated into the
-tibia (lower leg), with the femur (upper leg) captured between the two halves of the tibia joint,
-forming a sandwich-like structure. This arrangement creates overhangs on both the top and bottom
-surfaces of the femur where it interfaces with the tibia, requiring support material to be generated
-in two places: between the upper tibia surface and the femur, and between the femur and the lower
-tibia surface. The overhang surface is large and cannot be recovered if drooped and melted to the
-other part, thus support was necessary, so unfortunately, each knee has a bit of PETG support in it.
-PLA filament can also be used as an alternative to PETG for support, requiring breaking it by
-moving the knee joint after printing. Beyond the main structural parts, the model contains eight
-servo holders that are printed separately. Each holder weighs 5 grams and does not require support
-material. The holders attach to the servos with screws, while the connection to the body uses
-integrated pins that slot into corresponding holes, eliminating the need for additional fasteners.
-In total, printing the complete model requires approximately 20.5 hours and 490 grams of filament.
-The body takes 7 hours and 154 grams, each of the four legs requires 3 hours and 74 grams, and the
-eight servo holders together take 1.5 hours and 40 grams.
+challenges emerged during these iterations, and to achieve the requirements while using the same
+design, I had to make exceptions to the basic principles. For example, a support blocker is used to
+prevent support from being generated inside the motor extension, creating a bridging surface that
+spans a gap without support.
+
+Another example showing the challenge of designing print-in-place models is the knee. The knee
+joint employs a cylindrical pivot pin that is integrated into the tibia (lower leg), with the femur
+(upper leg) captured between the two halves of the tibia joint, forming a sandwich-like structure.
+This arrangement creates overhangs on both the top and bottom surfaces of the femur where it
+interfaces with the tibia. Support material is therefore required in two places: between the upper
+tibia surface and the femur, and between the femur and the lower tibia surface. The overhanging
+surface is large and could droop and fuse to the other part, after which it could not be recovered.
+Support was therefore necessary, so unfortunately, each knee contains a small amount of PETG
+support material. PLA can also be used as an alternative support material, but it must be broken
+free by moving the knee joint after printing.
+
+Beyond the main structural parts, the model contains eight servo holders that are printed
+separately. Each holder weighs 5 grams and does not require support material. The holders attach to
+the servos with screws, while the connection to the body uses integrated pins that slot into
+corresponding holes, eliminating the need for additional fasteners. In total, printing the complete
+model requires approximately 20.5 hours and 490 grams of filament. The body takes 7 hours and 154
+grams, each of the four legs requires 3 hours and 74 grams, and the eight servo holders together
+take 1.5 hours and 40 grams.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{leg printing process.jpg}
-    \caption{Half-through printing process of an experimental leg on an Bambu Lab A1 3D printer
-using only PLA filament. Tibia is on the left, support for the femur and secondary link is in the
-middle, and the motor extension, extension link, and shoulder disk are on the top. The image
-perfecly demonstrates how the print-in-place leg is designed inside.}
+  \caption{Partially completed printing process of an experimental leg on a Bambu Lab A1 3D
+printer using only PLA filament. The tibia is on the left, support for the femur and secondary link
+is in the middle, and the motor extension, extension link, and shoulder disk are at the top. The
+image demonstrates how the print-in-place leg is designed internally.}
     \label{fig:experimental-leg}
 \end{figure}
 
-When the whole model was stable and ready, I started assembling it all together. With the experience
-I gained, it would take around one hour to assemble everything. Connecting PCA9685 to the Raspberry
-Pi was a straightforward process. The control pin connection layout is the following: VCC to 3.3V,
-GND to GND, SDA to GPIO 2 (SDA), and SCL to GPIO 3 (SCL). PCA9685 does not power the servos from
-the controller, instead there is a separate V+ and GND terminals. Those are connected to an
-external power supply. While testing I used a lab power supply, set to 6V and 6A, which was enough
-for testing purposes. In order to enable I2C communication interface on the Raspberry Pi, it needed
-to be enabled through the Raspberry Pi Configuration tool, which can be accessed through
-\texttt{sudo raspi-config} under Interface Options, I2C. After that, I2C utilities should be
-installed by running \texttt{sudo apt install i2c-tools}. The connectivity can be verified by
-running \texttt{i2cdetect -y 1}, which should show the PCA9685 at address $0x40$ (hexadecimal). The
-address is hardcoded to $0x40$ by the manufacturer, as the default base address for this chip. In
-the I2C protocol, each device requires a unique 7-bit address for the master controller to identify
-it. The PCA9685 uses a partially configurable address scheme where the upper bits are fixed
-internally (binary $1000000$, corresponding to hexadecimal $0x40$), while the lower six bits can be
-modified via external address pins labeled $A^0$ through $A^5$. This design allows up to 62 PCA9685
-devices to coexist on the same bus by changing the pin configurations, enabling expansion of PWM
-outputs without requiring additional communication channels. For instance, setting pin $A^0$ high
-while keeping others low changes the address from $0x40$ to $0x41$. This flexible addressing makes
-the PCA9685 well-suited for robotics applications requiring numerous servo motors. For this project,
-I am not changing the default address, so it remains at $0x40$. The other pins are 16 channels for
-PWM output, which are connected to the servos. Each channel consists of three pins: V+ (power),
-GND (ground), and OUT (signal). I grouped them by leg in this order: hip extension, knee flexion,
-and hip abduction, so it is easier to understand which channel controls which joint. The PCA9685
-board exposes sockets for the servos, so it is convenient to connect them without soldering,
-however, the board itself exposes the I2C pins, while Raspberry Pi exposes its GPIO pins, so I had
-to solder wires to connect them together. Each servo has $180^\circ$ range of motion, so before
-attaching servos to the robot, I set: hip to $90^\circ$, knee to $60^\circ$, and abduction to
-$95^\circ$, to their home position. These values are hardcoded in the code and all movements are
-relative to them. Then, the servos are attached as following: the hip abduction servo is screwed
-vertically to its slot in the body and a dual-arm horn is attached to the gear, after that the hip
-extension and knee flexion servos are put together and secured with servo holders on the sides, then
-another dual-arm horn is attached to the knee flexion servo, while a round disc horn is screwed to
-the back side of the femur. Ultimately, the horns are connected to the hip and motor extension
-respectively. The same procedure is repeated for all four legs. After that, the electronics are
-installed inside the body and the Raspberry Pi camera module is mounted to the front camera slot.
-With the mechanical assembly complete, the control software can command movement.
+When the whole model was stable and ready, I started assembling it all together. With the
+experience I gained, I estimate that it would take around one hour to assemble everything.
+Connecting the PCA9685 to the Raspberry Pi was a straightforward process. The control-pin
+connection layout is the following: VCC to 3.3 V, GND to the common ground, SDA to GPIO 2, and SCL
+to GPIO 3. The PCA9685 logic supply does not power the servos; instead, the board has separate V+
+and GND terminals for the servo power supply. These are connected to an external power supply.
+While testing, I used a laboratory power supply set to 6 V with a 6 A current limit, which was
+enough for testing.
+
+In order to enable the I2C communication interface on the Raspberry Pi, I enabled it through
+\texttt{sudo raspi-config} under Interface Options, I2C. After that, I installed the I2C utilities
+by running \texttt{sudo} \texttt{apt} \texttt{install} \texttt{i2c-tools}. The connection can be
+verified by running \texttt{i2cdetect} \texttt{-y} \texttt{1}, which should show the PCA9685 at
+its default 7-bit address,
+\texttt{0x40}. In the I2C protocol, each device requires a unique 7-bit address so that the
+controller can identify it. The PCA9685 uses a partially configurable address scheme: the most
+significant bit is fixed, while the lower six bits can be modified using the external address pins
+$A^0$ through $A^5$. With all six pins low, the binary address is $1000000$, corresponding to
+\texttt{0x40}. This design allows up to 62 PCA9685 boards to coexist on the same bus. For example,
+setting $A^0$ high while keeping the other pins low changes the address to \texttt{0x41}. For this
+project, I use the default address, \texttt{0x40}.
+
+The other pins form 16 channels for PWM output, which are connected to the servos. Each channel
+consists of three pins: V+ for power, GND, and OUT for the control signal. I grouped them by leg in
+the following order: hip extension, knee flexion, and hip abduction, so it is easier to understand
+which channel controls each joint. The PCA9685 board provides sockets for the servos, so they can be
+connected without soldering. However, the board exposes the I2C pins, while the Raspberry Pi exposes
+its GPIO header, so I soldered wires to connect them.
+
+Each servo has a $180^\circ$ range of motion, so before attaching the servos to the robot, I set the
+hip extension to $90^\circ$, knee flexion to $60^\circ$, and hip abduction to $95^\circ$ as their
+home positions. These values are defined in the code, and all movements are relative to them. Then,
+the servos are attached as follows. The hip-abduction servo is fixed vertically in its slot in the
+body, and a dual-arm horn is attached to its output shaft. After that, the hip-extension and
+knee-flexion servos are placed together and secured with servo holders on the sides. Another
+dual-arm horn is attached to the knee-flexion servo, while a round disc horn is fixed to the rear
+side of the femur. Finally, the horns are connected to the hip and motor extension, respectively.
+The same procedure is repeated for all four legs. After that, the electronics are installed inside
+the body, and the Raspberry Pi camera module is mounted in the front camera slot. With the
+mechanical assembly complete, the control software can command movement.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{legs.jpg} % Replace with the latest benchmark
-    \caption{On the left is are front sides of the legs. In the middle is the back side of the leg
-with connected horns. On the right is the hip abduction and knee flextion servos attached together
+  \caption{On the left are the front sides of the legs. In the middle is the back side of a leg
+with connected horns. On the right are the hip-abduction and knee-flexion servos attached together
 with the servo holders.}
     \label{fig:legs}
 \end{figure}
 
-A step consists of two phases: the swing phase, where the leg is parabolically lifted and moved
-forward, and the stance phase, where the foot drives backward relative to the chassis, generating
-the ground reaction force that pushes the robot's body forward. A gait is the periodic pattern of
-these foot movements. To translate desired foot positions into servo angles, the system uses a
-lookup table approach rather than inverse kinematics. This method was chosen because the mechanical
-coupling in the leg design, where hip movement affects knee angle, makes standard analytical
-solutions impractical. The lookup table contains pre-calibrated mappings between joint angles and
-foot positions, created by setting different servo angles and measuring the resulting foot
-positions. With the hip mounting point defined as the coordinate origin, the foot position is
-expressed in millimeters relative to this reference. The calibration data consists of 81
-measurements spanning the feasible range of hip and knee angles. Each entry records the hip angle,
+A step consists of two phases: swing and stance. During the swing phase, the foot leaves the ground
+and moves to the next contact position. During the stance phase, the foot remains in contact with
+the ground and supports the robot. For forward movement, it moves backward relative to the chassis,
+generating the ground reaction force that pushes the robot's body forward. A gait defines how the
+steps of all four legs are timed and coordinated.
+
+In this implementation, the swing and stance phases are represented using trajectories. During the
+swing trajectory, the foot moves linearly in the horizontal direction while its vertical position
+follows a sine-shaped arch:
+\begin{equation}
+x(t) = x_{\text{start}} + (x_{\text{end}} - x_{\text{start}})t, \qquad
+y(t) = y_{\text{ground}} + L\sin(\pi t),
+\end{equation}
+where $t$ ranges from 0 to 1 and $L$ is the lift height. This arch is smooth and resembles a
+parabola, but the implementation uses a sine function rather than a mathematical parabola. For the
+same lift height and step duration, the sine profile has a lower vertical speed at lift-off and
+touchdown than a parabolic profile, making these transitions less abrupt. During the stance
+trajectory, the horizontal position changes linearly in the opposite direction while $y$ remains
+at $y_{\text{ground}}$.
+
+To translate desired foot positions into servo angles, the system uses a lookup-table approach
+rather than analytical inverse kinematics. This method was chosen because the mechanical coupling
+in the leg design, where hip movement affects the effective knee geometry, makes a simple
+analytical model impractical. The lookup table contains pre-calibrated mappings
+between joint angles and foot positions, created by setting different servo angles and measuring
+the resulting foot positions. With the hip mounting point defined as the coordinate origin, the
+foot position is expressed in millimeters relative to this reference. The calibration data
+consists of 81 measurements spanning the feasible range of hip and knee angles. Each entry records
+the hip angle,
 knee angle, and the corresponding foot coordinates, capturing the reachable workspace of the leg.
 When the control system requests a target foot position $(x_t, y_t)$, it locates the nearest
 calibration points in the two-dimensional position space and interpolates between them using inverse
@@ -379,29 +430,35 @@ calibration angles:
 \end{equation}
 
 In practice, the implementation includes several practical adjustments: if the target lies within
-$0.1$~mm of a calibration point, that point is returned directly without interpolation; distances
-below $0.001$~mm are clamped to prevent division by zero; and the final interpolated angles are
-rounded to the nearest integer, since the servos accept only whole-degree commands. This method
-assigns greater influence to closer calibration points, producing smooth angle estimates even for
+$0.1$~mm of a calibration point, the stored angles are returned directly without interpolation;
+distances below $0.001$~mm are clamped to prevent division by zero; and the final interpolated
+angles are rounded to the nearest integer because the current software represents commands in
+whole degrees. This is a software choice, not a limitation of the PCA9685 or servo. The method
+assigns greater influence to closer calibration points, producing interpolated angle estimates for
 positions that were not explicitly measured. The approach is particularly suitable for this
-mechanism because the mechanical coupling between the hip and knee joints, arising from the
-linkage geometry of the leg, precludes a closed-form analytical solution. While inverse
-kinematics is the conventional approach in robotics literature, empirical mapping provides a
-practical alternative when mechanical complexity or manufacturing tolerances make analytical models
-unreliable. The abduction joints, which control side-to-side leg movement, are not included in the
+mechanism because the mechanical coupling and manufacturing tolerances make an accurate closed-form
+analytical model difficult to derive. While inverse kinematics is the conventional approach in
+robotics literature, empirical mapping provides a practical alternative when mechanical complexity
+or manufacturing tolerances make analytical models unreliable. The
+abduction joints, which control side-to-side leg movement, are not included in the
 lookup table because their motion is kinematically decoupled from the primary leg swing mechanism.
 These joints operate independently and are controlled through direct angle commands. Each servo is
 individually calibrated to account for mechanical variations and assembly differences between left
 and right legs. A direction multiplier ensures that positive commands produce consistent physical
 movements across all legs, while center offsets compensate for variations in the home position.
-Three distinct gaits are implemented: a crawl gait for statically stable locomotion, where legs move
-sequentially in a diagonal pattern; a trot gait for faster movement, where diagonal leg pairs move
-simultaneously; and a turning gait, where left and right legs move in opposite directions to
-generate rotational torque. Servo movements are interpolated over time with configurable speed,
-ensuring smooth motion and preventing sudden movements that could upset the robot's balance. All
-movements are defined relative to a home position, which serves as the reference point for
-calibration and initialization. Since the lookup table was measured for the left legs, the right
-legs use mirrored values to maintain symmetry in movement.
+Three hip-and-knee gait functions are implemented. In the crawl function, the legs swing in the
+order left front, right rear, right front, and left rear. Because the function moves one leg at a
+time, three feet remain on the ground, although the actual static stability still depends on the
+center-of-gravity position. In the trot gait, the left-front and right-rear legs form one diagonal
+pair, while the right-front and left-rear legs form the other. One pair follows the swing trajectory
+while the other follows the stance trajectory, and the pairs then exchange roles. In the turning
+gait, the left and right legs use opposite horizontal directions to generate rotational torque.
+
+The sideways gait uses the hip-abduction joints to move the legs laterally. First, the robot tilts
+its body away from the direction of movement, shifting its weight onto the supporting legs. The
+legs on the other side are then moved outward one at a time. After that, the robot tilts its body
+in the opposite direction, allowing the remaining legs to move inward one at a time. Repeating
+this sequence moves the robot sideways while three legs support the body during each step.
 
 The software architecture is organized into four functional layers. The lowest layer abstracts the
 hardware interface, managing communication with the PWM driver and providing a unified interface for
@@ -409,36 +466,39 @@ setting servo angles. Above this sits the kinematics layer, which implements the
 interpolation logic to translate desired foot positions into joint angles. The gait generation layer
 defines the periodic leg movement patterns, swing and stance trajectories, and orchestrates
 their execution across multiple legs according to the selected gait pattern. As discussed in
-Section~\ref{sec:literature-review}, statically stable gaits require that the center of gravity
-remains within the support polygon formed by the grounded feet; the crawl gait satisfies this
-criterion by moving only one leg at a time, while the trot gait achieves faster locomotion by moving
-diagonal pairs simultaneously, trading some stability margin for speed. The highest layer comprises
-the application interfaces that allow human operators to command the robot. The primary control
-interface is a web server running on the Raspberry Pi that exposes an HTTP-based remote control
-endpoint. HTTP is a request-response application protocol operating over TCP, in which the client
+Section~\ref{sec:literature-review}, static stability requires the projection of the center of
+gravity to remain within the support polygon formed by the grounded feet. Moving one leg at a time
+keeps three feet on the ground, so the crawl gait is designed to meet this condition. However, the
+condition still depends on the actual center-of-gravity position and must be verified
+experimentally. The trot gait moves diagonal pairs simultaneously and trades static stability for
+speed. The highest layer comprises the application interfaces that allow human operators to command
+the robot. The primary control interface is a web server, which runs on the
+Raspberry Pi and exposes HTTP-based remote-control endpoints. HTTP is a request-response
+application protocol operating over TCP, in which the client
 (the operator's browser) initiates a connection and sends a request, and the server returns a
 response. The server listens on a dedicated port and handles two types of requests. A GET request
 to the root path returns the HTML control page, which contains a JavaScript component that captures
-keyboard events. When the operator presses a key, the script issues an asynchronous POST request
-carrying the movement command to a specific endpoint path. The server parses the request path to
+keyboard events. When the operator presses a key, the script issues an asynchronous POST request to
+\texttt{/moveForward}, \texttt{/moveBackwards}, \texttt{/walkSidewaysLeft}, or
+\texttt{/walkSidewaysRight}. The server parses the request path to
 determine the desired action and, because HTTP itself is stateless, maintains an internal state
 machine to track whether the robot is idle, standing, or executing a gait. Upon receiving a movement
 command, the server transitions to the moving state and spawns a background execution thread so that
 the gait can run without blocking the communication interface. A timeout mechanism automatically
-returns the robot to a resting position if no further commands are received within a few seconds,
+returns the robot to a resting position if no further commands are received for three seconds,
 preventing the robot from remaining in an active stance indefinitely. This design prioritizes
 responsiveness and simplicity, making the robot accessible to operators without requiring
 specialized control hardware or software installation. For development and debugging, separate
-command-line utilities allow individual servos to be positioned manually. These tools were essential
-during the calibration phase and for verifying mechanical assembly, as it enables direct control of
-any joint without invoking the full gait system, as well as settings servos to desired angles for
-collecting lookup measurements.
+command-line utilities allow individual servos to be positioned manually. These tools were
+essential during calibration and mechanical assembly because they enable direct control of any
+joint without starting the full gait system. They were also used to set the servos to the angles
+required for collecting lookup-table measurements.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{robot.jpg}
-    \caption{Semi-assembled standing quadruped robot without a camera module powered by a lab power supply
-and a power plug behind it. The wires are not yet organized.}
+  \caption{Semi-assembled standing quadruped robot without a camera module, powered by a lab power
+supply, with a power plug behind it. The wires are not yet organized.}
     \label{fig:robot}
 \end{figure}
 \subsection{Object Detection Model}
@@ -451,34 +511,36 @@ adjacent layer, a CNN employs convolutional layers that apply learnable filters 
 local regions of the input. Each filter detects specific visual features of a given image,
 such as edges, textures, shapes, or increasingly abstract patterns, by computing dot products
 between the filter weights and the local pixel values. The output of this operation is a feature map
-that preserves the spatial relationships within the image. CNNs also incorporate pooling layers,
+that preserves the spatial relationships within the image. CNNs can also incorporate pooling layers,
 which progressively reduce the spatial dimensions of the feature maps, thereby decreasing
-computational complexity and providing a degree of translation invariance. This hierarchical feature
-extraction, combined with weight sharing across spatial locations, makes CNNs exceptionally
-effective for computer vision tasks while requiring far fewer parameters than their fully connected
-counterparts.
+computational complexity and providing a degree of translation tolerance. This hierarchical
+feature extraction, combined with weight sharing across spatial locations, makes CNNs exceptionally
+effective for computer vision tasks while requiring far fewer parameters than fully connected
+networks.
 
-YOLO introduces the most innovative approach to object recognition. Before, systems like Deformable
-Parts Model (DPM) and Regression-based Convolutional Neural Network (R-CNN) repurposed classifiers
-to perform detection. Classifiers for each object were used to evaluate it at various locations and
-scales in a test image in a sliding windows manner or on potential bounding boxes. Then the
-post-processing stage would refine the bounding boxes and remove duplicates. Such cumbersome
-pipelines were slow and difficult to optimize because of heterogeneous nature of these components.
-The new approach that YOLO introduces uses the whole images to train the model to predict objects,
-which converts object detection to a single regression problem. This method uses a single
-convolution network to predict multiple bounding boxes and class probabilities for these boxes
-simultaneously, which make it swift by simplifying the pipeline. Unlike the aforementioned
-mechanisms, YOLO can reason globally by examining the whole image, which gives it an advantage of
-learning generalized representations of objects.
+The original YOLO introduced an innovative approach to object recognition~\cite{yolo}. Before it,
+systems such as the Deformable Parts Model (DPM)~\cite{felzenszwalb2010} and Region-based
+Convolutional Neural Network (R-CNN)~\cite{rcnn} used classifiers in multi-stage detection
+pipelines. Classifiers for each object were used to evaluate it at various locations and scales in
+a test image, either in a sliding-window manner or on proposed bounding boxes. A post-processing
+stage would then refine the bounding boxes and remove duplicate detections. Such cumbersome
+pipelines were slow and difficult to optimize because of the heterogeneous nature of their
+components. The new approach introduced by YOLO uses the whole image to train the model to predict
+objects, converting object detection into a single regression problem. This method uses a single
+convolutional network to predict multiple bounding boxes and their class probabilities
+simultaneously, making it swift by simplifying the pipeline. Unlike the aforementioned mechanisms,
+YOLO can reason globally by examining the whole image, which gives it the advantage of learning
+generalized representations of objects.
 
-The model starts by dividing the input image into $S \times S$ grid. Each grid cell is responsible
-for detecting bounding boxes, their confidence, and class probabilities. Grid cells are not limited
-to one bounding box or class, instead, they can have $B$ boxes but only one set of $C$ classes
-probabilities per cell. In the original paper the authors suggest 2 and 20 respectively on a
-$7 \times 7$ grid. Each of these bounding boxes is made up of 5 numbers: the x and y positions,
-representing the location of the center of the predicted bounding box; the width and height relative
-to the entire image size; and the confidence score, representing the predicted Intersection over
-Union (IoU) between the bounding box and the ground truth. Formally,
+The following description applies to the original YOLO model. The model starts by dividing the
+input image into an $S \times S$ grid. Each grid cell is responsible for predicting bounding boxes,
+their confidence scores, and class probabilities. Grid cells are not limited to one bounding box;
+instead, they can predict $B$ boxes but only one set of $C$ conditional class probabilities per
+cell. In the original paper, the authors use $B=2$ and $C=20$ on a $7 \times 7$ grid. Each bounding
+box is made up of five numbers: the $x$ and $y$ positions, representing the location of the center
+relative to the grid cell; the width and height relative to the entire image; and the confidence
+score, representing the predicted Intersection over Union (IoU) between the bounding box and the
+ground truth, multiplied by the probability that an object is present. Formally,
 \begin{equation}
 \text{confidence} = \Pr(\text{object}) \times \text{IoU}_{\text{pred}}^{\text{truth}}.
 \end{equation}
@@ -494,27 +556,27 @@ is obtained by multiplying the conditional class probabilities by the box confid
 This product encodes both the probability that the box contains an object of class $i$ and how well
 the box fits the object.
 
-The network architecture borrows heavily from GoogLeNet, also known as Inception-v1. It is made up
-of 24 convolutional layers followed by 2 fully connected layers at the end. The convolutional layers
-handle feature extraction, starting with simple edges and textures and building up to more complex
-patterns, while the fully connected layers map these features to the final output tensor of size
-$S \times S \times (B \times 5 + C)$.
+The original network architecture borrows heavily from GoogLeNet, also known as
+Inception-v1~\cite{yolo}. It is made up of 24 convolutional layers followed by two fully connected
+layers. The convolutional layers handle feature extraction, starting with simple edges and textures
+and building up to more complex patterns, while the fully connected layers map these features to
+the final output tensor of size $S \times S \times (B \times 5 + C)$.
 
 For training, the authors chose Sum-Squared Error (SSE) as the loss function. This single loss
 covers three things at once: the accuracy of bounding box coordinates, the confidence score, and
 the class prediction. A challenge here was that most grid cells in any image do not contain an
-object, which can bias the model toward always predicting ``no object.'' To prevent this, the loss
+object, which can bias the model toward always predicting ``no object''. To prevent this, the loss
 function applies different weights to different parts of the prediction. Coordinate errors are
 multiplied by $\lambda_{\text{coord}} = 5$ to increase their importance, while confidence errors
 for empty boxes are scaled down by $\lambda_{\text{noobj}} = 0.5$. This ensures that the network
 pays more attention to getting the boxes right when objects are actually present.
 
 Because every cell predicts multiple bounding boxes, the network naturally generates many
-overlapping detections around the same object. To deal with this, YOLO runs non-maximum suppression
-(NMS) as a post-processing step. NMS works by selecting the box with the highest confidence and
-removing any other box that overlaps with it significantly, meaning any box with a high IoU.
-The end result is a single, high-confidence bounding box per object rather than multiple
-overlapping predictions.
+overlapping detections around the same object. To deal with this, YOLO applies non-maximum
+suppression (NMS) as a post-processing step. NMS works by selecting the box with the highest
+confidence and removing lower-confidence boxes that overlap with it significantly, meaning boxes
+whose IoU exceeds a chosen threshold. The end result is usually a single high-confidence bounding
+box per object rather than multiple overlapping predictions.
 
 Since its original release, YOLO has evolved through several major architectural shifts. Early
 iterations moved from pure regression to anchor-based detection, introduced batch normalization
@@ -525,19 +587,20 @@ ecosystem migrated from Darknet to native PyTorch, and automated augmentation an
 calculation removed much of the manual tuning. More recently, the architecture has shifted toward
 anchor-free detection, decoupled classification and regression heads, and unified frameworks that
 integrate object detection with segmentation and pose estimation under a single model family. For
-this project, I decided to use the Ultralytics YOLO library with the YOLOv8 model, which implements
-a modern version of the architecture with these advancements built in. It offers a good trade-off
-between real-time performance and detection accuracy, which is critical when running on a
-resource-constrained platform like the Raspberry Pi. This setup allows the robot to reliably detect
-objects at frame rates that are sufficient for real-world interaction.
+this project, I decided to use the Ultralytics YOLO library with the YOLOv8n
+model~\cite{ultralytics}. YOLOv8 uses an anchor-free detector and separate outputs for
+classification and bounding-box regression. I chose the nano variant to reduce memory use and
+inference time on the Raspberry Pi. Its actual on-device frame rate and detection performance must
+be measured experimentally.
 
-As mentioned before in the requirements of the project, the selected objects to train the model on
-are dogs and humans. I chose the most significant datasets in the history of object detection: COCO
-and Stanford Dogs. COCO contains over $330,000$ images and more than $2.5$ million labeled instances
-across 91 object categories, while the latter contains over $22,000$ annotated images of dogs
-belonging to 120 species. Even though the datasets are great as they are, they should be adapted to
-the case I have, which is a close-to-ground quadruped robot. The average height of the camera of
-the robot in the standing position is $17$~cm with an upward tilt of $15^\circ$.
+As mentioned before in the project requirements, the selected target classes are dogs and humans.
+I chose two significant datasets in the history of object detection: COCO~\cite{coco} and Stanford
+Dogs~\cite{stanforddogs}. COCO contains more than $330,000$ images, of which over $200,000$ are
+labelled, and approximately $1.5$ million object instances across 80 object categories. Stanford
+Dogs contains $20,580$ annotated images of dogs belonging to 120 breeds. Even though the datasets
+are suitable as they are, they must be adapted to the case I have, which is a close-to-ground
+quadruped robot. The average height of the camera in the standing position is approximately
+$17$~cm, with an upward tilt of $15^\circ$.
 
 To understand why adaptation is necessary, it helps to look at what the camera actually sees. The
 camera has a horizontal field of view of $54^\circ$ and a vertical field of view of $41^\circ$. The
@@ -545,13 +608,13 @@ optical axis is tilted $15^\circ$ above horizontal, so the vertical field of vie
 this axis: the top edge of the frame is $15^\circ + 20.5^\circ = 35.5^\circ$ above horizontal, and
 the bottom edge is $15^\circ - 20.5^\circ = 5.5^\circ$ below horizontal.
 
-At a horizontal distance $d$ from the robot, the height of the top edge of the frame is
+Expressing all distances in centimeters, the height of the top edge at horizontal distance $d$ is
 \begin{equation}
-y_{\text{top}} = 17 + d \cdot \tan(35.5^\circ) \approx 17 + 0.713d \text{ cm},
+y_{\text{top}} = 17 + d \cdot \tan(35.5^\circ) \approx 17 + 0.713d,
 \end{equation}
 and the height of the bottom edge is
 \begin{equation}
-y_{\text{bottom}} = 17 - d \cdot \tan(5.5^\circ) \approx 17 - 0.096d \text{ cm}.
+y_{\text{bottom}} = 17 - d \cdot \tan(5.5^\circ) \approx 17 - 0.096d.
 \end{equation}
 The factor $0.713$ comes from $\tan(35.5^\circ)$ and the factor $0.096$ comes from
 $\tan(5.5^\circ)$. The total vertical span of the frame at distance $d$ is the difference between
@@ -561,7 +624,7 @@ $[y_{\text{bottom}}, y_{\text{top}}]$ is cut off.
 The horizontal width of the view is determined by the $54^\circ$ horizontal field of view. With half
 of that angle being $27^\circ$, the total width is
 \begin{equation}
-w = 2d \cdot \tan(27^\circ) \approx 1.019d \text{ cm}.
+w = 2d \cdot \tan(27^\circ) \approx 1.019d.
 \end{equation}
 
 Figure~\ref{fig:camera-geometry} illustrates the geometry in a side view. The camera sits at
@@ -617,10 +680,6 @@ and the bottom edge at $5.5^\circ$ below horizontal.
   \filldraw[green!60!black] (5,1.22) circle (2pt);
   \node[green!60!black, right] at (5,1.44) {$y_{\text{bottom}} \approx 12.2$~cm};
   
-  % Human silhouette
-  \draw[thick, purple] (5,0) -- (5,8.5);
-  \node[purple, right] at (5,8.5) {Human ($170$~cm)};
-  
   % Visible region shading
   \fill[blue!10, opacity=0.3] (0,1.7) -- (8,7.4) -- (8,0.93) -- cycle;
 \end{tikzpicture}
@@ -647,38 +706,33 @@ wedge-shaped region that widens with distance.
   \node[blue] at (-1,-4.2) {Forward};
 
   % Left edge of horizontal FOV
-  \draw[thick, red] (0,0) -- (-3.8,-4.5);
-  \node[red] at (-3.5,-4.9) {$27^\circ$ left};
+  \draw[thick, red] (0,0) -- (-2.29,-4.5);
+  \node[red] at (-2.5,-4.8) {$27^\circ$ left};
 
   % Right edge of horizontal FOV
-  \draw[thick, green!60!black] (0,0) -- (3.8,-4.5);
-  \node[green!60!black] at (3.5,-4.9) {$27^\circ$ right};
+  \draw[thick, green!60!black] (0,0) -- (2.29,-4.5);
+  \node[green!60!black] at (2.5,-4.8) {$27^\circ$ right};
 
-  % Distance arcs
-  \draw[dashed, gray] (0,0) circle (1.5);
-  \node[gray] at (2,-1) {$50$~cm};
-
-  \draw[dashed, gray] (0,0) circle (3);
-  \node[gray] at (3.5,-1.5) {$100$~cm};
-
-  \draw[dashed, gray] (0,0) circle (4.5);
-  \node[gray] at (4.8,-2.2) {$150$~cm};
+  % Forward-distance markers
+  \node[gray, left] at (-0.9,-1.5) {$50$~cm};
+  \node[gray, left] at (-1.7,-3) {$100$~cm};
+  \node[gray, left] at (-2.4,-4.5) {$150$~cm};
 
   % Width labels
-  \draw[<->, thick, purple] (-2.55,-1.5) -- (2.55,-1.5);
-  \node[purple] at (1,-1.8) {$\approx 51$~cm};
+  \draw[<->, thick, purple] (-0.76,-1.5) -- (0.76,-1.5);
+  \node[purple] at (0.55,-1.8) {$\approx 51$~cm};
 
-  \draw[<->, thick, purple] (-5.10,-3) -- (5.10,-3);
-  \node[purple] at (1.1,-3.3) {$\approx 102$~cm};
+  \draw[<->, thick, purple] (-1.53,-3) -- (1.53,-3);
+  \node[purple] at (0.7,-3.3) {$\approx 102$~cm};
 
-  \draw[<->, thick, purple] (-7.64,-4.5) -- (7.64,-4.5);
-  \node[purple] at (1.1,-4.9) {$\approx 153$~cm};
+  \draw[<->, thick, purple] (-2.29,-4.5) -- (2.29,-4.5);
+  \node[purple] at (0.8,-4.8) {$\approx 153$~cm};
 
   % FOV angle arc
-  \draw[thick, orange] (0,-1) arc (-90:-50:1);
-  \node[orange] at (0.4,-1.235) {$27^\circ$};
+  \draw[thick, orange] (0,-1) arc (-90:-63:1);
+  \node[orange] at (0.3,-1.2) {$27^\circ$};
 \end{tikzpicture}
-\caption{Top-down view of the horizontal field of view. The dashed circles mark distances of
+\caption{Top-down view of the horizontal field of view. The labels mark forward distances of
 $50$~cm, $100$~cm, and $150$~cm, with the corresponding view widths shown in purple.}
 \label{fig:camera-top-view}
 \end{figure}
@@ -720,85 +774,93 @@ viewpoint from the standard dataset images, which are usually taken at eye level
 objects. Training on those images without adjustment would leave the model unprepared for the
 low-angle, from-below perspective that the robot actually experiences.
 
-To address the issue, I create a balanced dataset by combining the original COCO and Stanford Dogs
-datasets that undergo data transformations to simulate the robot's perspective as well as to mimic
-variations in camera exposure, color calibration, and image quality. The balanced dataset contains
-cropped images of people and dogs as well as their bounding box annotations. Additionally to that,
-the dataset contains $10\%$ of negative sample images, which are images that do not contain any of
-the target objects. After preparing the dataset, I split it into training and validation sets, with
-an $80$--$20$ split, which results into $12,500$ training images, where $5,000$ contain people,
-$5,000$ contain dogs, and $2,500$ are negative samples. The validation set contains $2,500$ images:
-$1,000$ with people, $1,000$ with dogs, and $500$ negative samples.
+To address the issue, I created a balanced dataset by combining the original COCO and Stanford
+Dogs datasets. For every accepted annotation, the preparation code saves a full-object crop and a
+lower-body crop. The human crop contains a randomly selected lower $40$--$70\%$ of the annotated
+height, while the dog crop contains the lower $60$--$80\%$. This does not reproduce a projective
+camera transformation; instead, it approximates the partial view produced by the robot's low
+camera position. Additional transformations vary brightness, contrast, blur, and scale, while
+YOLO's training augmentation also changes color, translation, scale, and image composition.
 
-The model is trained on a MacBook Pro with an Apple M2 Pro chip with 16 core GPU. The training
-utilzes the Metal Performance Shaders (MPS) backend, which is Apple's framework, designed on top of
-Metal graphics API, for accelerating machine learning workloads on GPU. Architecturally, MPS
-abstracts the complexity of writing low-level Metal Shading Language (MSL) by providing a suite of
-pre-compiled, mathematically optimized compute kernels, which are small parallelized mathematical
-operations, such as multi-dimensional matrix multiplications and convolutional operations. The
-execution of these kernels is orchestrated by PyTorch's dynamic computational graph, which maps out
-the sequence of mathematical operations and data dependencies required by the model. When this graph
-is dispatched to the ``mps'' device backend, the framework analyzes the graph's structure to select
-and schedule the precise kernels needed for execution. This process leverages Apple Silicon’s
-Unified Memory Architecture (UMA), executing a zero-copy memory allocation scheme where the CPU and
-GPU access a singular, shared pool of physical RAM without the latency-inducing overhead of PCIe bus
-transfers. Consequently, MPS compiles these graph operations into specialized Pipeline State Objects
-(PSOs) and commits them to a Metal Command Buffer, which the hardware schedules across highly
-parallelized GPU compute cores. This tight integration Apple's hardware in PyTorch allows to use
-the full potential of the hardware, which results in significantly faster training times compared to
-CPU-only execution.
+The current generated split contains $12,500$ training images and $2,500$ validation images, which
+is approximately an $83$--$17$ split. The training set contains $5,000$ images with people,
+$5,000$ with dogs, and $2,500$ negative samples. The validation set contains $1,000$ images with
+people, $1,000$ with dogs, and $500$ negative samples. Negative samples therefore form $20\%$ of
+each current split.
+
+The model is trained on a MacBook Pro with an Apple M2 Pro chip and a 16-core GPU\@. The training
+utilizes the PyTorch Metal Performance Shaders (MPS) backend, which is Apple's framework, built on
+the Metal graphics API, for accelerating machine learning workloads on the
+GPU~\cite{pytorchmps,applemetal}. Architecturally, MPS abstracts the complexity of
+writing low-level Metal Shading Language by providing optimized operations and kernels. These
+perform parallel mathematical operations such as multidimensional matrix multiplication and
+convolution~\cite{pytorchmps}.
+
+The execution of these operations is orchestrated by PyTorch's dynamic computational graph, which
+maps the sequence of mathematical operations and data dependencies required by the model. When
+the graph is dispatched to the \texttt{mps} device, PyTorch sends supported operations to the
+MPS backend for execution on the GPU~\cite{pytorchmps}. Apple silicon uses a Unified Memory
+Architecture (UMA), in which the CPU and GPU access a shared pool of physical
+memory~\cite{appleshared}. This can reduce the need to copy data between separate CPU and GPU memory
+pools. PyTorch's MPS backend maps supported graph operations to MPS Graph functions or optimized
+Metal kernels. The resulting GPU commands are encoded into Metal command buffers, which are
+scheduled for execution on the GPU\@. This tight integration of Apple's hardware with PyTorch allows
+the GPU to accelerate training compared with CPU-only execution.
 
 An additional factor that contributes to the speed of training is the correct use of training
-parameters. After many experiments, I found that the best resulting parameters in terms of accuracy
-and training time are: batch size of $8$, epochs of $50$, and $0$ workers. Additionally, the image
-size parameter is set to $320$ so the model can run in real-time on the Raspberry Pi. The final
-command for training is:
+parameters. The run that produced the validation image in Figure~\ref{fig:validation-prediction}
+can be identified by an exact file match with its saved artifact. Its configuration contains 30
+epochs, a batch size of $8$, image size $320$, the MPS device, and no data-loading workers. The
+following command reconstructs its effective saved settings:
 \begin{minted}{bash}
-PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 \
 yolo detect train model=yolov8n.pt \
-data=data.yaml \
+data=dataset.yaml \
 imgsz=320 \
 batch=8 \
-epochs=50 \
+epochs=30 \
 device=mps \
-workers=0
+workers=0 \
+patience=100 \
+optimizer=auto \
+cache=False \
+val=False \
+mosaic=0
 \end{minted}
 where:
 \begin{description}
-  \item[\texttt{PYTORCH\_MPS\_HIGH\_WATERMARK\_RATIO=0.0}] An environment variable for PyTorch's MPS
-backend; setting it to \texttt{0.0} allows the MPS allocator to use memory more aggressively to
-avoid OOM errors on Apple Silicon.
   \item[\texttt{yolo detect train}] The Ultralytics CLI command that selects the YOLO detection task
 and starts a training run.
   \item[\texttt{model=yolov8n.pt}] The initial weights to load (YOLOv8 Nano). This uses a small,
 fast pretrained model as a transfer-learning starting point.
-  \item[\texttt{data=data.yaml}] Path to the dataset configuration YAML describing
+  \item[\texttt{data=dataset.yaml}] Path to the dataset configuration YAML describing
 training/validation image locations and class names.
-  \item[\texttt{imgsz=320}] Input image size (images are resized to 320×320). Smaller sizes reduce
-memory and speed up training at the cost of some small-object accuracy, acceptable for real-time
-applications.
+  \item[\texttt{imgsz=320}] Sets the input canvas to $320 \times 320$ pixels. Images keep their
+aspect ratio and are padded as needed. A smaller input reduces memory and computation but can
+reduce accuracy for small objects.
   \item[\texttt{batch=8}] Number of images processed per optimization step. Lower batch sizes reduce
-memory usage and increases training speed.
-  \item[\texttt{epochs=50}] Number of full passes over the training set.
+memory use, but they do not always increase training speed and can reduce GPU throughput.
+  \item[\texttt{epochs=30}] Number of full passes over the training set.
   \item[\texttt{device=mps}] Use the Apple Metal Performance Shaders (MPS) GPU backend on macOS
 instead of the CPU.
-  \item[\texttt{workers=0}] Disable background data loader subprocesses (safer on macOS to avoid
-multiprocessing issues).
+  \item[\texttt{workers=0}] Load data in the main process rather than in worker subprocesses.
 \end{description}
 This configuration is well-optimized for training on consumer hardware while still achieving good
-accuracy. The training process typically take around $2.5$ hours to complete on this hardware. The
-recorded training curves show steady convergence: all training losses (bounding-box, class,
-and distribution focal loss) decrease consistently, which indicates the model learned from the
-data. A final validation pass (performed after training because validation was disabled during
-the loop) produced very high aggregate metrics: precision $\approx 96.5\%$, recall $\approx 94.5\%$,
-mAP@50 $\approx 98.7\%$, and mAP@50:95 $\approx 97.8\%$. At the same time the validation
-classification loss is noticeably larger than the training classification loss (val~$\approx 0.70$
-vs. train~$\approx 0.09$), suggesting some degree of overfitting on class predictions. These results
-are encouraging for a lightweight `yolov8n` model running at $320\times320$.
+accuracy. The training process typically takes around $2.5$ hours to complete on this hardware.
+The recorded training curves show steady convergence: the bounding-box, classification, and
+distribution focal losses decrease consistently, indicating that the model learned from the data.
+The final validation produced very high aggregate metrics: precision $\approx 96.5\%$, recall
+$\approx 94.5\%$, mAP@50 $\approx 98.7\%$, and mAP@50:95 $\approx 97.8\%$. At the same time, the
+validation classification loss is noticeably larger than the training classification loss
+(approximately $0.70$ compared with $0.09$), suggesting some degree of overfitting in the class
+predictions. The metrics describe performance on the prepared validation set; an independent set
+of images captured by the robot is still needed to measure generalization to the real camera
+viewpoint. These results are encouraging for a lightweight \texttt{yolov8n} model with a
+$320 \times 320$ input.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{val_batch2_pred.jpg} % Replace with the latest benchmark
-    \caption{Validation predictions on a batch with bounding box, class, and confidence scores.}
+    \caption{Final validation predictions from the 30-epoch run, with bounding boxes, classes, and
+  confidence scores.}
     \label{fig:validation-prediction}
 \end{figure}
 
@@ -861,6 +923,12 @@ Felzenszwalb, P. F., Girshick, R. B., McAllester, D., \& Ramanan, D. (2010).
 Object detection with discriminatively trained part-based models.
 \textit{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 32(9), 1627--1645.
 
+\bibitem{rcnn}
+Girshick, R., Donahue, J., Darrell, T., \& Malik, J. (2014).
+Rich feature hierarchies for accurate object detection and semantic segmentation.
+\textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+580--587.
+
 \bibitem{coco}
 Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll{\'a}r, P., \&
 Zitnick, C. L. (2014).
@@ -874,8 +942,33 @@ Novel dataset for fine-grained image categorization.
  Pattern Recognition}.
 
 \bibitem{knox}
-Knox, T. (n.d.). Quadruped I. Retrieved from
+Knox, T. (n.d.). Quadruped I.
 \url{https://www.printables.com/model/1443108-quadruped-i}
+
+\bibitem{raspberrypi4}
+Raspberry Pi Ltd. (n.d.). Raspberry Pi 4 Model B specifications.
+\url{https://www.raspberrypi.com/products/raspberry-pi-4-model-b/specifications/}
+
+\bibitem{pca9685}
+NXP Semiconductors. (2015). PCA9685: 16-channel, 12-bit PWM Fm+ I2C-bus LED controller.
+\url{https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf}
+
+\bibitem{ultralytics}
+Ultralytics. (n.d.). YOLOv8 documentation.
+\url{https://docs.ultralytics.com/models/yolov8/}
+
+\bibitem{pytorchmps}
+PyTorch Contributors. (2026). MPS backend.
+\url{https://docs.pytorch.org/docs/stable/notes/mps.html}
+
+\bibitem{applemetal}
+Apple Inc. (n.d.). Metal framework.
+\url{https://developer.apple.com/documentation/metal}
+
+\bibitem{appleshared}
+Apple Inc. (n.d.). Choosing a resource storage mode for Apple GPUs.
+\url{https://developer.apple.com/documentation/metal/%
+choosing-a-resource-storage-mode-for-apple-gpus}
 
 \end{thebibliography}
 
