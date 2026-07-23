@@ -887,10 +887,10 @@ result was obtained at the final epoch. The measured validation results are pres
 Chapter~\ref{chap:results}.
 
 After training, the PyTorch checkpoint was exported to the NCNN format for deployment on the
-Raspberry Pi. The export uses a batch size of one, a $320 \times 320$ input, and 32-bit
-floating-point weights. It contains the classes \texttt{human} and \texttt{dog} and produces the
-NCNN parameter and binary weight files required for inference. Successful export confirms format
-conversion.
+Raspberry Pi because NCNN is designed for efficient execution on ARM-based devices. The export uses
+a batch size of one, a $320 \times 320$ input, and 32-bit floating-point weights. It contains the
+same classes \texttt{human} and \texttt{dog} and produces the NCNN parameter and binary weight files
+required for inference.
 
 % Add:
 % - physical metrics: speed, torque, stride length, power consumption, etc.
