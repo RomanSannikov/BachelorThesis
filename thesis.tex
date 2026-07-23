@@ -745,6 +745,9 @@ span. For example, at $d = 50$~cm the frame covers the band from $12.2$~cm to $5
 ground. A human standing there occupies $[0, 170]$~cm, so the overlap is $[12.2, 52.7]$~cm, giving
 a visible portion of $40.5$~cm or about $24$\% of the total body. A dog of height $50$~cm occupies
 $[0, 50]$~cm, so the overlap is $[12.2, 50]$~cm, giving $37.8$~cm or about $76$\% of the body.
+For the complete body of a $170$~cm human to be visible, the top edge of the frame must reach
+$170$~cm. Solving $y_{\text{top}} = 170$ gives a distance of approximately $214.5$~cm. At this
+distance, both humans and dogs are fully visible.
 
 \begin{table}[h]
 \centering
@@ -756,6 +759,7 @@ $[0, 50]$~cm, so the overlap is $[12.2, 50]$~cm, giving $37.8$~cm or about $76$\
 50  & 40.5  & 51.0  & $\approx$24\% & $\approx$76\%\\
 100 & 81.0  & 101.9 & $\approx$48\% & $\approx$85\%\\
 150 & 121.4 & 152.9 & $\approx$71\% & $\approx$95\%\\
+214.5 & 173.7 & 218.6 & 100\% & 100\%\\
 \hline
 \end{tabular}
 \caption{Camera field of view at different distances (in cm), assuming an adult human height of
@@ -764,37 +768,65 @@ and a medium dog height of $50$~cm.}
 \label{tab:camera-fov}
 \end{table}
 
-The numbers make the problem clear. At the distances where the robot is likely to encounter humans
-and dogs, roughly $50$--$150$~cm, the camera captures the lower portion of humans and most of
-a dog's body. At $50$~cm, only about a quarter of a human is visible, mostly lower legs and feet.
-Dogs fare much better because of their smaller size, with three-quarters or more of the body
-typically in frame. As the distance increases, more of a human comes into view, but the perspective
-remains unusual: the camera looks up from below rather than straight on. This is a very different
-viewpoint from the standard dataset images, which are usually taken at eye level and show complete
-objects. Training on those images without adjustment would leave the model unprepared for the
-low-angle, from-below perspective that the robot actually experiences.
+The table shows that the low position of the robot's camera does not capture full humans and dogs
+at closer distances. The closer distances are important because those are the distances where dogs
+and human can interact with the robot and the robot's vision must support detecting them. This is
+a very different viewpoint from the standard dataset images, which are usually taken at eye level
+and show complete objects. Additionally, the camera resolution is low-quality whereas standard
+datasets usually contain higher resolution images. Training on those images without adjustment would
+leave the model unprepared for such perspective or image quality.
 
-To address the issue, I created a balanced dataset by combining the original COCO and Stanford
-Dogs datasets. For every accepted annotation, the preparation code saves a full-object crop and a
-lower-body crop. The human crop contains a randomly selected lower $40$--$70\%$ of the annotated
-height, while the dog crop contains the lower $60$--$80\%$. This does not reproduce a projective
-camera transformation; instead, it approximates the partial view produced by the robot's low
-camera position. Additional transformations vary brightness, contrast, blur, and scale, while
-YOLO's training augmentation also changes color, translation, scale, and image composition.
+To address these problems and satisfy the project requirements, I created a new custom built dataset
+that combines modified COCO and Stanford Dogs datasets. The two output classes are human and dog.
+The split between training, validation, and test is $80\%$, $10\%$, and $10\%$ for each dataset.
+Several checks were added to reduce incorrect labels and data leakage. Stanford Dogs provides dog
+annotations but can also show people who are not annotated. A pretrained detector was therefore used
+as a screening step, and $3,869$ Stanford images with a person detection at a confidence of at least
+$0.20$ were excluded. Since COCO annotates both humans and dogs, such detector was not needed in
+that case.
 
-The current generated split contains $12,500$ training images and $2,500$ validation images, which
-is approximately an $83$--$17$ split. The training set contains $5,000$ images with people,
-$5,000$ with dogs, and $2,500$ negative samples. The validation set contains $1,000$ images with
-people, $1,000$ with dogs, and $500$ negative samples. Negative samples therefore form $20\%$ of
-each current split.
+The source images keep their native resolution and aspect ratio. They are not stretched or
+permanently resized to the camera resolution, however, during training and testing, Ultralytics
+scales each image to fit a $320 \times 320$ input and adds padding where necessary. This
+letterboxing avoids distorting people and dogs. Partial examples are included only in the training
+split. The preparation code creates one additional square view biased towards the lower part of a
+randomly selected object, which results in approximately $25\%$ of positive training sources. The
+crop aims to retain roughly from $40\%$ to $75\%$ of a human's height or from $60\%$ to $90\%$ of
+a dog's height and the full source image always remains in the dataset. The remaining augmentation
+applies small color changes, rotation up to $3^\circ$, translation up to $10\%$, scaling, and
+horizontal flipping.
 
-The model is trained on a MacBook Pro with an Apple M2 Pro chip and a 16-core GPU\@. The training
-utilizes the PyTorch Metal Performance Shaders (MPS) backend, which is Apple's framework, built on
-the Metal graphics API, for accelerating machine learning workloads on the
-GPU~\cite{pytorchmps,applemetal}. Architecturally, MPS abstracts the complexity of
-writing low-level Metal Shading Language by providing optimized operations and kernels. These
-perform parallel mathematical operations such as multidimensional matrix multiplication and
-convolution~\cite{pytorchmps}.
+The final training set contains $4,025$ partial views: $1,028$ contain only human labels, $2,602$
+contain only dog labels, and $395$ contain both classes. Table~\ref{tab:vision-dataset} gives the
+complete audited dataset. The box counts are not equal, so the dataset is not described as balanced.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\hline
+\textbf{Split} & \textbf{Full} & \textbf{Partial} & \textbf{Total} &
+\textbf{Human boxes} & \textbf{Dog boxes} & \textbf{Negatives} \\
+\hline
+Training   & 20,278 & 4,025 & 24,303 & 20,493 & 16,975 & 4,061 \\
+Validation & 2,583  & 0     & 2,583  & 3,263  & 1,152  & 518 \\
+Test       & 2,611  & 0     & 2,611  & 3,161  & 1,165  & 523 \\
+\hline
+Total      & 25,472 & 4,025 & 29,497 & 26,917 & 19,292 & 5,102 \\
+\hline
+\end{tabular}
+\caption{Audited image and object counts in the prepared detection dataset. A negative image
+contains no annotated human or dog.}
+\label{tab:vision-dataset}
+\end{table}
+
+The model is trained on a MacBook Pro with a 10-core Apple M2 Pro chip, a 16-core GPU, and $16$~GB
+of unified memory. The training utilizes the PyTorch Metal Performance Shaders (MPS)
+backend, which is Apple's framework, built on the Metal graphics API, for accelerating machine
+learning workloads on the GPU~\cite{pytorchmps,applemetal}. Architecturally, MPS abstracts the
+complexity of writing low-level Metal Shading Language by providing optimized operations and
+kernels. These perform parallel mathematical operations such as multidimensional matrix
+multiplication and convolution~\cite{pytorchmps}.
 
 The execution of these operations is orchestrated by PyTorch's dynamic computational graph, which
 maps the sequence of mathematical operations and data dependencies required by the model. When
@@ -807,24 +839,24 @@ Metal kernels. The resulting GPU commands are encoded into Metal command buffers
 scheduled for execution on the GPU\@. This tight integration of Apple's hardware with PyTorch allows
 the GPU to accelerate training compared with CPU-only execution.
 
-An additional factor that contributes to the speed of training is the correct use of training
-parameters. The run that produced the validation image in Figure~\ref{fig:validation-prediction}
-can be identified by an exact file match with its saved artifact. Its configuration contains 30
-epochs, a batch size of $8$, image size $320$, the MPS device, and no data-loading workers. The
-following command reconstructs its effective saved settings:
+\subsubsection{Training configuration}
+The model is initialized from pretrained \texttt{yolov8n.pt} weights and fine-tuned on the prepared
+dataset. The environment contains Python 3.11.13, PyTorch 2.12.0, and Ultralytics 8.4.53.
+Several training runs were performed from the Python notebook and the Ultralytics command-line
+interface and both methods are equivalent. Here is the final command configuration I used for
+training the model:
 \begin{minted}{bash}
 yolo detect train model=yolov8n.pt \
 data=dataset.yaml \
 imgsz=320 \
-batch=8 \
-epochs=30 \
+batch=16 \
+epochs=60 \
 device=mps \
 workers=0 \
-patience=100 \
-optimizer=auto \
-cache=False \
-val=False \
-mosaic=0
+seed=42 \
+deterministic=True \
+val=True \
+mosaic=1.0
 \end{minted}
 where:
 \begin{description}
@@ -832,37 +864,33 @@ where:
 and starts a training run.
   \item[\texttt{model=yolov8n.pt}] The initial weights to load (YOLOv8 Nano). This uses a small,
 fast pretrained model as a transfer-learning starting point.
-  \item[\texttt{data=dataset.yaml}] Path to the dataset configuration YAML describing
-training/validation image locations and class names.
+  \item[\texttt{data}] The value \texttt{dataset.yaml} points to the dataset configuration YAML
+describing training/validation image locations and class names.
   \item[\texttt{imgsz=320}] Sets the input canvas to $320 \times 320$ pixels. Images keep their
 aspect ratio and are padded as needed. A smaller input reduces memory and computation but can
 reduce accuracy for small objects.
-  \item[\texttt{batch=8}] Number of images processed per optimization step. Lower batch sizes reduce
-memory use, but they do not always increase training speed and can reduce GPU throughput.
-  \item[\texttt{epochs=30}] Number of full passes over the training set.
+  \item[\texttt{batch=16}] Number of images processed per optimization step. This value fit within
+the available unified memory during the completed run.
+  \item[\texttt{epochs=60}] Number of full passes over the training set.
   \item[\texttt{device=mps}] Use the Apple Metal Performance Shaders (MPS) GPU backend on macOS
 instead of the CPU.
   \item[\texttt{workers=0}] Load data in the main process rather than in worker subprocesses.
+  \item[\texttt{seed=42}] Fix the random seed to ensure reproducibility of the training process.
+  \item[\texttt{deterministic=True}] Forces deterministic algorithm use to improve reproducibility.
+  \item[\texttt{val=True}] Evaluate the validation split after every epoch.
+  \item[\texttt{mosaic=1.0}, \texttt{close\_mosaic=10}] Use mosaic augmentation during training and
+disable it for the final ten epochs so the model finishes on normal image composition.
 \end{description}
-This configuration is well-optimized for training on consumer hardware while still achieving good
-accuracy. The training process typically takes around $2.5$ hours to complete on this hardware.
-The recorded training curves show steady convergence: the bounding-box, classification, and
-distribution focal losses decrease consistently, indicating that the model learned from the data.
-The final validation produced very high aggregate metrics: precision $\approx 96.5\%$, recall
-$\approx 94.5\%$, mAP@50 $\approx 98.7\%$, and mAP@50:95 $\approx 97.8\%$. At the same time, the
-validation classification loss is noticeably larger than the training classification loss
-(approximately $0.70$ compared with $0.09$), suggesting some degree of overfitting in the class
-predictions. The metrics describe performance on the prepared validation set; an independent set
-of images captured by the robot is still needed to measure generalization to the real camera
-viewpoint. These results are encouraging for a lightweight \texttt{yolov8n} model with a
-$320 \times 320$ input.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{val_batch2_pred.jpg} % Replace with the latest benchmark
-    \caption{Final validation predictions from the 30-epoch run, with bounding boxes, classes, and
-  confidence scores.}
-    \label{fig:validation-prediction}
-\end{figure}
+
+Training the model for all 60 epochs took approximately 6 hours and 56 minutes. The best validation
+result was obtained at the final epoch. The measured validation results are presented in
+Chapter~\ref{chap:results}.
+
+After training, the PyTorch checkpoint was exported to the NCNN format for deployment on the
+Raspberry Pi. The export uses a batch size of one, a $320 \times 320$ input, and 32-bit
+floating-point weights. It contains the classes \texttt{human} and \texttt{dog} and produces the
+NCNN parameter and binary weight files required for inference. Successful export confirms format
+conversion.
 
 % Add:
 % - physical metrics: speed, torque, stride length, power consumption, etc.
@@ -873,15 +901,116 @@ $320 \times 320$ input.
 
 \chapter{Results}
 \label{chap:results}
-% Results of the work, analysis, and showcase.
+\section{Object detection results}
+The YOLOv8n model completed all 60 epochs. Table~\ref{tab:vision-validation-results}
+shows the aggregate results from the validation split at the final and best epoch. Precision
+describes the fraction of reported detections that are correct, while recall describes the fraction
+of annotated objects that were found. mAP@50 uses an Intersection over Union threshold of $0.50$.
+mAP@50:95 averages the result over thresholds from $0.50$ to $0.95$ and is therefore more strict
+about bounding-box placement.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\hline
+\textbf{Metric} & \textbf{Validation result} \\
+\hline
+Precision & $85.16\%$ \\
+Recall & $74.31\%$ \\
+mAP@50 & $80.26\%$ \\
+mAP@50:95 & $61.32\%$ \\
+\hline
+\end{tabular}
+\caption{Aggregate validation metrics for the corrected 60-epoch YOLOv8n model.}
+\label{tab:vision-validation-results}
+\end{table}
+
+The difference between mAP@50 and mAP@50:95 shows that accurate box placement at stricter overlap
+thresholds remains more difficult. Recall is also lower than precision, which means that missed
+objects remain an important weakness. At epoch 60, the training box, classification, and
+Distribution Focal Loss values were $0.749$, $0.545$, and $1.007$. The corresponding validation
+values were $0.985$, $0.683$, and $1.020$. The validation metrics and losses continued to improve
+through the final epoch, so the completed run does not show clear validation overfitting.
+
+These values are validation results, not independent test results. The prepared test split remains
+untouched, and separate combined, COCO-only, and Stanford-only test measurements have not yet been
+recorded. No images from the robot camera were used for training or evaluation. Therefore, the
+current results show that the model learned the prepared dataset, but they do not yet prove
+generalization to the robot's low camera position or real-time operation on the Raspberry Pi.
+
+Figure~\ref{fig:vision-training-results} presents the saved training history.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{vision_training_results.png}
+    \caption{Training and validation losses and aggregate validation metrics over the completed
+    60-epoch run.}
+    \label{fig:vision-training-results}
+\end{figure}
+
+Figure~\ref{fig:validation-prediction} shows example predictions saved during validation. These
+examples are useful for visual inspection.
+
+\begin{figure}[H]
+    \centering
+  \includegraphics[width=0.95\textwidth]{validation_predictions_random_3.png}
+  \caption{Predictions from the 60-epoch model on eight selected validation images, with four
+  human and four dog examples.}
+    \label{fig:validation-prediction}
+\end{figure}
+
+Figure~\ref{fig:robot-camera-predictions} shows additional examples captured using the robot's
+camera. Unlike the validation images, these pictures represent the low camera position and outdoor
+conditions of the actual robot. The model handles the images well even with different lighting and
+backgrounds. The model detects objects at different distances, in different positions, and even when
+only a small part of an object is visible. It runs at 3 frames per second, which is low but usable
+for a first prototype. Disabling the object recognition mode increases the frame rate to 30 frames
+per second.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{robot_camera_predictions_collage.png}
+  \caption{Human and dog predictions on images captured using the robot's camera.}
+  \label{fig:robot-camera-predictions}
+\end{figure}
+
+
 
 \chapter{Conclusion}
 \label{chap:conclusion}
-% Summarize the most important findings and their significance.
+This thesis presents the design and implementation of a low-cost quadruped robot as one integrated
+project. The computer-vision part resulted in a reproducible two-class dataset pipeline, a trained
+YOLOv8n detector, and an NCNN deployment artifact. The dataset keeps full scenes, includes partial
+training views that approximate the visibility expected from the robot's low viewpoint, and
+separates source images before augmentation to avoid leakage.
+
+The validation results show that the lightweight model can learn to detect humans and dogs at a
+$320 \times 320$ input resolution. However, the lower recall and the difference between mAP@50 and
+mAP@50:95 show that missed objects and precise localization can still be improved. The results must
+also be interpreted within their limits: independent test measurements and Raspberry Pi benchmarks
+have not yet been completed, and the model has not been evaluated with the real robot camera.
+Therefore, the project provides a working and reproducible base, but further physical validation is
+needed before autonomous use.
 
 \chapter{Future work}
 \label{chap:future-work}
-% Suggestions for future work based on the findings.
+The next step for the computer-vision system is to evaluate the untouched test split. Results should
+be reported for the complete test set and separately for COCO and Stanford Dogs. A confidence
+threshold should be selected only on the validation split, after which the false-positive rate
+should be measured on negative test images. Comparing the trained detector with the original
+pretrained YOLOv8n model would also show how much improvement comes from the prepared dataset.
+
+The NCNN model should be benchmarked directly on the Raspberry Pi with batch-one
+$320 \times 320$ input. The experiment should report average latency, frame rate, memory use, and
+temperature over a sustained run. If the result is too slow, reduced-precision or quantized models
+can be investigated.
+
+The effective camera field of view should be measured in the final square camera mode. Short camera
+sequences can then be recorded at several distances and lighting conditions for evaluation without
+using them as additional training data. This would test the domain difference between public
+datasets and the real low-angle robot view. Finally, physical experiments should measure gait
+speed, stability, power consumption, and the effect of running vision at the same time as robot
+control.
 
 \begin{thebibliography}{10}
 \addcontentsline{toc}{chapter}{Reference list}
