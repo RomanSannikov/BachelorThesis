@@ -252,7 +252,7 @@ simultaneous stall of all 12 servos would require 30 A, although this is not the
 current. To power the robot, I decided to use a battery pack made from four 3500 mAh 18650
 lithium-ion batteries. Connected in a 2S2P configuration (two series pairs in parallel),
 they provide a nominal voltage of 7.2 V and a total nominal capacity of 7000 mAh. Since the
-Raspberry Pi requires a 5 V supply, I use buck converters to provide 7 V for the servos and 5 V for
+Raspberry Pi requires a 5 V supply, the buck converters will provide 7 V for the servos and 5 V for
 the Raspberry Pi.
 
 For computer vision, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
@@ -902,6 +902,49 @@ required for inference.
 
 \chapter{Results}
 \label{chap:results}
+\section{Robot construction and locomotion results}
+The robot was designed in Onshape to be easy-to-assemble with most of the parts print-in-place.
+Then, the printed parts with purchased components were assembled together. After that the software
+for the robot was developed using the Python programming language and the Adafruit ServoKit library.
+The last step was to prepare the dataset, train the YOLOv8n model, and deploy it on the Raspberry
+Pi.
+
+The mechanical result is an assembled robot with 12 actuated joints. Printing the body, four legs,
+and eight servo holders took approximately 20.5 hours and used 490 grams of filament. Based on the
+assembly process, the robot can be assembled in approximately one hour after the printed parts are
+prepared. The prototype was tested using a laboratory power supply set to 6 V with a 6 A current
+limit.
+
+The software can move the robot between various positions. Types of gaits implemented in the
+software are crawl, trot, turning, and sideways movement gaits. The leg movement is calculated
+using the lookup table, which converts the desired foot positions into hip and knee servo angles
+through inverse distance weighting. The web interface provides forward, backward, and sideways
+commands together with live video streaming and object detection.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{
+  >{\raggedright\arraybackslash}p{0.34\textwidth}
+  >{\raggedright\arraybackslash}p{0.56\textwidth}
+}
+\hline
+\textbf{Project requirement} & \textbf{Result} \\
+\hline
+Movement on flat surfaces in all directions & Crawl, trot, turning, and sideways commands were
+implemented \\
+12 degrees of freedom & Twelve servos were installed, providing three actuated joints per leg. \\
+Human and dog detection & The model was deployed on the Raspberry Pi and used with the robot's
+camera. \\
+Easy assembly and reproduction & The printed structure uses one body, four print-in-place legs,
+and eight servo holders. Assembly is estimated to take approximately one hour. \\
+Affordable components & The components used in the project are widely available and affordable. \\
+\hline
+\end{tabular}
+\caption{Results compared with the project requirements.}
+\label{tab:project-requirement-results}
+\end{table}
+
 \section{Object detection results}
 The YOLOv8n model completed 60 epochs. Table~\ref{tab:vision-validation-results} shows the aggregate
 results from the validation split at the final and best epoch. Precision describes the fraction of
@@ -912,25 +955,27 @@ placement.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lr}
+\begin{tabular}{lrrrr}
 \hline
-\textbf{Metric} & \textbf{Validation result} \\
+\textbf{Result} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP@50} &
+\textbf{mAP@50:95} \\
 \hline
-Precision & $85.16\%$ \\
-Recall & $74.31\%$ \\
-mAP@50 & $80.26\%$ \\
-mAP@50:95 & $61.32\%$ \\
+All classes & $85.17\%$ & $74.30\%$ & $80.26\%$ & $61.32\%$ \\
+Human & $83.26\%$ & $52.59\%$ & $64.05\%$ & $39.88\%$ \\
+Dog & $87.09\%$ & $96.01\%$ & $96.47\%$ & $82.77\%$ \\
 \hline
 \end{tabular}
-\caption{Aggregate validation metrics for the corrected 60-epoch YOLOv8n model.}
+\caption{Aggregate and per-class validation metrics for the 60-epoch YOLOv8n model.}
 \label{tab:vision-validation-results}
 \end{table}
 
 The difference between mAP@50 and mAP@50:95 shows that accurate box placement at stricter overlap
 thresholds remains more difficult. Recall is also lower than precision, which means that missed
-objects remain an important weakness. At the last epoch, the training box, classification, and
-Distribution Focal Loss values were $0.749$, $0.545$, and $1.007$. The corresponding validation
-values were $0.985$, $0.683$, and $1.020$.
+objects remain an important weakness. The per-class results show that dog detection performs much
+better than human detection. In particular, human recall is $52.59\%$, while dog recall is
+$96.01\%$. This means that missed humans are the main weakness of the model. At the last epoch, the
+training box, classification, and Distribution Focal Loss values were $0.749$, $0.545$, and
+$1.007$. The corresponding validation values were $0.985$, $0.683$, and $1.020$.
 
 Figure~\ref{fig:vision-training-results} presents the saved training history.
 
@@ -942,15 +987,72 @@ Figure~\ref{fig:vision-training-results} presents the saved training history.
     \label{fig:vision-training-results}
 \end{figure}
 
-Figure~\ref{fig:validation-prediction} shows example predictions saved during validation. These
-examples are useful for visual inspection.
+Figure~\ref{fig:validation-prediction} shows predictions from the trained YOLOv8n model on eight
+selected validation images. These examples are useful for visual inspection.
 
 \begin{figure}[H]
     \centering
   \includegraphics[width=0.95\textwidth]{validation_predictions_random_3.png}
-  \caption{Predictions on eight selected validation images, with four human and four dog examples.}
+  \caption{YOLOv8n predictions on eight selected validation images, with four human and four dog
+  examples.}
   \label{fig:validation-prediction}
 \end{figure}
+
+Figure~\ref{fig:ncnn-validation-prediction} shows predictions from the NCNN model on the same
+images. Both models detect the same objects and assign the same classes. The bounding boxes and
+confidence scores are slightly different.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{validation_predictions_ncnn.png}
+  \caption{NCNN predictions on the same eight validation images.}
+  \label{fig:ncnn-validation-prediction}
+\end{figure}
+
+The complete validation split was also evaluated using both model formats. The results are shown in
+Table~\ref{tab:model-format-comparison}. The difference is below 0.4 percentage points for every
+aggregate metric. Therefore, the conversion to NCNN preserved the overall validation performance,
+although individual predictions are not numerically identical.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Format} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP@50} &
+\textbf{mAP@50:95} \\
+\hline
+PyTorch & $85.17\%$ & $74.30\%$ & $80.26\%$ & $61.32\%$ \\
+NCNN & $85.54\%$ & $74.48\%$ & $80.33\%$ & $61.22\%$ \\
+\hline
+\end{tabular}
+\caption{Validation results of the PyTorch and NCNN model formats.}
+\label{tab:model-format-comparison}
+\end{table}
+
+To compare execution speed, both model formats were benchmarked on the Apple M2 Pro CPU using six
+threads, batch size one, 32-bit floating-point values, and a $320 \times 320$ input. The same input
+images and Ultralytics settings were used for both formats. The images were loaded into memory
+before the measurement, and preliminary runs were not included in the results.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\hline
+\textbf{Format} & \textbf{Forward pass} & \textbf{Complete prediction} & \textbf{Frame rate} \\
+\hline
+PyTorch & 18.73 ms & 20.43 ms & 48.96 FPS \\
+NCNN & 5.95 ms & 7.02 ms & 142.45 FPS \\
+\hline
+\end{tabular}
+\caption{Average PyTorch and NCNN execution time on the Apple M2 Pro CPU.}
+\label{tab:model-speed-comparison}
+\end{table}
+
+The forward-pass result is based on 200 runs per format using an already prepared input. The
+complete prediction result is based on 80 runs per format and includes preprocessing, inference,
+and postprocessing. It excludes disk access, camera capture, and drawing the bounding boxes. NCNN
+was 3.15 times faster for the forward pass and 2.91 times faster for the complete prediction. Both
+formats produced the same detection counts and classes on the eight benchmark images.
 
 Figure~\ref{fig:robot-camera-predictions} shows additional examples captured using the robot's
 camera. Unlike the validation images, these pictures represent the low camera position and outdoor
@@ -967,11 +1069,15 @@ per second.
   \label{fig:robot-camera-predictions}
 \end{figure}
 
+\section{Project cost}
 Table \ref{tab:purchased-components} lists all the components that were purchased for the project.
 Not everything was used in the final prototype, so Table \ref{tab:used-components} lists only the
 components that were actually used. The total cost of the purchased components was 33,690 RSD, which
-is approximately 287 EUR at the time of writing. The cost of the used components was 25,580 RSD,
-which is approximately 193 EUR. The total cost of the project satisfies the low-cost requirement.
+is approximately 287 EUR at the time of writing. The estimated cost of the components used in the
+prototype was at most 26,160 RSD, which is approximately 223 EUR. This estimate values all 490 grams
+of filament at the higher PLA price of 2,000 RSD per kilogram. Since a small amount of the
+lower-priced PETG was used, the actual cost is slightly lower. Even the total cost of all purchased
+components satisfies the 300 EUR limit.
 
 \begin{table}[H]
 \centering
@@ -983,8 +1089,8 @@ which is approximately 193 EUR. The total cost of the project satisfies the low-
 High-torque MG996R servo & 12 & 650 & 7,800 \\
 Raspberry Pi 4 Model B, 4 GB RAM & 1 & 12,990 & 12,990 \\
 LG MJ1 rechargeable 18650 Li-ion cell, 3500 mAh, 10 A, 3.6 V & 4 & 590 & 2,360 \\
-PLA filament, one spool & 1 & 2,000 & 2,000 \\
-PETG filament, one spool & 1 & 1,800 & 1,800 \\
+PLA filament, 1 kg spool & 1 & 2,000 & 2,000 \\
+PETG filament, 1 kg spool & 1 & 1,800 & 1,800 \\
 Raspberry Pi Camera Module & 1 & 730 & 730 \\
 PCA9685 PWM driver & 1 & 660 & 660 \\
 5 A DC-DC step-down voltage and current regulator with display & 1 & 830 & 830 \\
@@ -1023,41 +1129,35 @@ installed, and the two DC-DC regulators were not used.}
 \label{tab:used-components}
 \end{table}
 
+The batteries were not used in the final prototype because of the time constraints of the project.
+However, the majority of the components for this feature are bought and ready to be installed.
+
 \chapter{Conclusion}
 \label{chap:conclusion}
-This thesis presents the design and implementation of a low-cost quadruped robot as one integrated
-project. The computer-vision part resulted in a reproducible two-class dataset pipeline, a trained
-YOLOv8n detector, and an NCNN deployment artifact. The dataset keeps full scenes, includes partial
-training views that approximate the visibility expected from the robot's low viewpoint, and
-separates source images before augmentation to avoid leakage.
+This thesis presents the design and implementation of a low-cost quadruped robot with computer
+vision. All the software is written in Python. The robot supports external control and live video
+streaming. The resulting computer-vision model is a two-class YOLOv8n model converted to NCNN for
+speed and efficiency. The dataset for the model keeps full scenes, includes partial training views
+that approximate the visibility expected from the robot's low viewpoint.
 
-The validation results show that the lightweight model can learn to detect humans and dogs at a
+The validation results show that the lightweight model can detect humans and dogs at a
 $320 \times 320$ input resolution. However, the lower recall and the difference between mAP@50 and
-mAP@50:95 show that missed objects and precise localization can still be improved. The results must
-also be interpreted within their limits: independent test measurements and Raspberry Pi benchmarks
-have not yet been completed, and the model has not been evaluated with the real robot camera.
-Therefore, the project provides a working and reproducible base, but further physical validation is
-needed before autonomous use.
+mAP@50:95 show that missed objects and precise localization can still be improved.
+
+The conducted outdoor test validates that the model is capable of detecting humans and dogs in real
+environments.
 
 \chapter{Future work}
 \label{chap:future-work}
-The next step for the computer-vision system is to evaluate the untouched test split. Results should
-be reported for the complete test set and separately for COCO and Stanford Dogs. A confidence
-threshold should be selected only on the validation split, after which the false-positive rate
-should be measured on negative test images. Comparing the trained detector with the original
-pretrained YOLOv8n model would also show how much improvement comes from the prepared dataset.
+The robot can be improved in several ways. Servos motors can be replaced with higher torque servos
+to increase the robot's load capacity. Additionally, the robot can be equipped with a battery pack,
+that was initially purchased but not installed, and a charging circuit to make it independent from
+an external power supply. Also the robot can be equipped with sensors, such as an IMU, to improve
+its stability and navigation capabilities, or ground-contact sensors to detect the terrain and
+adjust its gait accordingly.
 
-The NCNN model should be benchmarked directly on the Raspberry Pi with batch-one
-$320 \times 320$ input. The experiment should report average latency, frame rate, memory use, and
-temperature over a sustained run. If the result is too slow, reduced-precision or quantized models
-can be investigated.
-
-The effective camera field of view should be measured in the final square camera mode. Short camera
-sequences can then be recorded at several distances and lighting conditions for evaluation without
-using them as additional training data. This would test the domain difference between public
-datasets and the real low-angle robot view. Finally, physical experiments should measure gait
-speed, stability, power consumption, and the effect of running vision at the same time as robot
-control.
+The whole design can be scaled up to a larger robot with more powerful motors and a higher payload
+capacity that would make it more suitable for practical applications.
 
 \begin{thebibliography}{10}
 \raggedright
