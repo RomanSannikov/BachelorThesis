@@ -10,9 +10,11 @@
 \usepackage{setspace}
 \setstretch{1.5}
 \usepackage{hyperref}
+\def\Urlmuskip{0mu plus 1mu}
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{array}
 
 \title{Bachelor Thesis}
 \author{Roman Sannikov}
@@ -247,9 +249,9 @@ also connected to 3.3 V for logic power and to a common ground~\cite{pca9685}.
 
 The specified stall current is 2.5 A per servo at 6 V. Using this value, a theoretical
 simultaneous stall of all 12 servos would require 30 A, although this is not the normal operating
-current. To power the robot, I decided to use a battery pack made from four 2500 mAh 18650
+current. To power the robot, I decided to use a battery pack made from four 3500 mAh 18650
 lithium-ion batteries. Connected in a 2S2P configuration (two series pairs in parallel),
-they provide a nominal voltage of 7.4 V and a total nominal capacity of 5000 mAh. Since the
+they provide a nominal voltage of 7.2 V and a total nominal capacity of 7000 mAh. Since the
 Raspberry Pi requires a 5 V supply, I use buck converters to provide 7 V for the servos and 5 V for
 the Raspberry Pi.
 
@@ -895,19 +897,18 @@ required for inference.
 % Add:
 % - physical metrics: speed, torque, stride length, power consumption, etc.
 % - model metrics
-% - cost
 % - links to the code and the model
 % - raw data sample of calibration, lookup-table format, samples, etc.
 
 \chapter{Results}
 \label{chap:results}
 \section{Object detection results}
-The YOLOv8n model completed all 60 epochs. Table~\ref{tab:vision-validation-results}
-shows the aggregate results from the validation split at the final and best epoch. Precision
-describes the fraction of reported detections that are correct, while recall describes the fraction
-of annotated objects that were found. mAP@50 uses an Intersection over Union threshold of $0.50$.
-mAP@50:95 averages the result over thresholds from $0.50$ to $0.95$ and is therefore more strict
-about bounding-box placement.
+The YOLOv8n model completed 60 epochs. Table~\ref{tab:vision-validation-results} shows the aggregate
+results from the validation split at the final and best epoch. Precision describes the fraction of
+reported detections that are correct, while recall describes the fraction of annotated objects that
+were found. mAP@50 uses an Intersection over Union threshold of $0.50$. mAP@50:95 averages the
+result over thresholds from $0.50$ to $0.95$ and is therefore more strict about bounding-box
+placement.
 
 \begin{table}[H]
 \centering
@@ -927,16 +928,9 @@ mAP@50:95 & $61.32\%$ \\
 
 The difference between mAP@50 and mAP@50:95 shows that accurate box placement at stricter overlap
 thresholds remains more difficult. Recall is also lower than precision, which means that missed
-objects remain an important weakness. At epoch 60, the training box, classification, and
+objects remain an important weakness. At the last epoch, the training box, classification, and
 Distribution Focal Loss values were $0.749$, $0.545$, and $1.007$. The corresponding validation
-values were $0.985$, $0.683$, and $1.020$. The validation metrics and losses continued to improve
-through the final epoch, so the completed run does not show clear validation overfitting.
-
-These values are validation results, not independent test results. The prepared test split remains
-untouched, and separate combined, COCO-only, and Stanford-only test measurements have not yet been
-recorded. No images from the robot camera were used for training or evaluation. Therefore, the
-current results show that the model learned the prepared dataset, but they do not yet prove
-generalization to the robot's low camera position or real-time operation on the Raspberry Pi.
+values were $0.985$, $0.683$, and $1.020$.
 
 Figure~\ref{fig:vision-training-results} presents the saved training history.
 
@@ -954,9 +948,8 @@ examples are useful for visual inspection.
 \begin{figure}[H]
     \centering
   \includegraphics[width=0.95\textwidth]{validation_predictions_random_3.png}
-  \caption{Predictions from the 60-epoch model on eight selected validation images, with four
-  human and four dog examples.}
-    \label{fig:validation-prediction}
+  \caption{Predictions on eight selected validation images, with four human and four dog examples.}
+  \label{fig:validation-prediction}
 \end{figure}
 
 Figure~\ref{fig:robot-camera-predictions} shows additional examples captured using the robot's
@@ -974,7 +967,61 @@ per second.
   \label{fig:robot-camera-predictions}
 \end{figure}
 
+Table \ref{tab:purchased-components} lists all the components that were purchased for the project.
+Not everything was used in the final prototype, so Table \ref{tab:used-components} lists only the
+components that were actually used. The total cost of the purchased components was 33,690 RSD, which
+is approximately 287 EUR at the time of writing. The cost of the used components was 25,580 RSD,
+which is approximately 193 EUR. The total cost of the project satisfies the low-cost requirement.
 
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{0.48\textwidth}rrr}
+\hline
+\textbf{Purchased item} & \textbf{Quantity} & \textbf{Unit price} & \textbf{Total price} \\
+\hline
+High-torque MG996R servo & 12 & 650 & 7,800 \\
+Raspberry Pi 4 Model B, 4 GB RAM & 1 & 12,990 & 12,990 \\
+LG MJ1 rechargeable 18650 Li-ion cell, 3500 mAh, 10 A, 3.6 V & 4 & 590 & 2,360 \\
+PLA filament, one spool & 1 & 2,000 & 2,000 \\
+PETG filament, one spool & 1 & 1,800 & 1,800 \\
+Raspberry Pi Camera Module & 1 & 730 & 730 \\
+PCA9685 PWM driver & 1 & 660 & 660 \\
+5 A DC-DC step-down voltage and current regulator with display & 1 & 830 & 830 \\
+300 W, 20 A DC-DC step-down voltage and current regulator & 1 & 1,210 & 1,210 \\
+Four-slot 18650 battery holder & 1 & 310 & 310 \\
+64 GB microSD card & 1 & 3,000 & 3,000 \\
+\hline
+\textbf{Total} & & & \textbf{33,690} \\
+\hline
+\end{tabular}
+\caption{Purchased components and their prices in Serbian dinars (RSD).}
+\label{tab:purchased-components}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{
+  >{\raggedright\arraybackslash}p{0.39\textwidth}
+  >{\centering\arraybackslash}p{0.18\textwidth}
+  >{\raggedright\arraybackslash}p{0.30\textwidth}
+}
+\hline
+\textbf{Item used} & \textbf{Quantity or amount} & \textbf{Purpose} \\
+\hline
+High-torque MG996R servo & 12 & Movement of the twelve robot joints \\
+Raspberry Pi 4 Model B, 4 GB RAM & 1 & Robot control and object detection \\
+PLA and PETG filament & Approximately 490 g & Printed structure and support interfaces \\
+Raspberry Pi Camera Module & 1 & Capturing images from the robot \\
+PCA9685 PWM driver & 1 & Generating control signals for the servos \\
+64 GB microSD card & 1 & Raspberry Pi OS and project software \\
+\hline
+\end{tabular}
+\caption{Purchased components used in the prototype. The batteries and battery holder were not
+installed, and the two DC-DC regulators were not used.}
+\label{tab:used-components}
+\end{table}
 
 \chapter{Conclusion}
 \label{chap:conclusion}
@@ -1013,6 +1060,7 @@ speed, stability, power consumption, and the effect of running vision at the sam
 control.
 
 \begin{thebibliography}{10}
+\raggedright
 \addcontentsline{toc}{chapter}{Reference list}
 
 \bibitem{bigdog}
