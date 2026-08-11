@@ -408,6 +408,9 @@ foot position is expressed in millimeters relative to this reference. The calibr
 consists of 81 measurements spanning the feasible range of hip and knee angles. Each entry records
 the hip angle,
 knee angle, and the corresponding foot coordinates, capturing the reachable workspace of the leg.
+For example, hip and knee angles of $40^\circ$ and $65^\circ$ correspond to the foot position
+$(6, -160)$~mm. The neighboring angle pairs $(40^\circ, 70^\circ)$ and
+$(40^\circ, 75^\circ)$ correspond to $(-3, -165)$~mm and $(-12, -168)$~mm, respectively.
 When the control system requests a target foot position $(x_t, y_t)$, it locates the nearest
 calibration points in the two-dimensional position space and interpolates between them using inverse
 distance weighting. For each calibration point $i$ with foot position $(x_i, y_i)$, the Euclidean
@@ -896,6 +899,24 @@ required for inference.
 
 % Add:
 % - physical metrics: speed, torque, stride length, power consumption, etc.
+%  - 44-51 FPS camera without detection
+%  - 3 FPS with the original detection model
+%  - 7-8 FPS with the NCNN detection model
+%  - 19 cm per 4 seconds = 4.75 cm/s = 0.0475 m/s
+%    x_start = -20
+%    x_end = 20
+%    y_ground = -165
+%    lift = 20
+%    samples = 5
+%    steps = 5
+%  - 4.5 cm per 13 sec = 0.35 cm/s = 0.0035 m/s with recognition
+%  - 3 cm per 1.5 sec = 2 cm/s = 0.02 m/s without recognition
+%  - Still: 0.221A, 1.328W from the lab power supply
+%  - Walking: 2.619A, 15.7W without detection from the lab power supply
+%  - Walking: 3.642A, 22.02W with detection from the lab power supply
+%  - Weight: 1171 g
+%  - Length: 30.5 cm (body), 38.5 cm (with legs), 11.5 cm (body width), 20.5 cm (width with legs),
+%        8.8 cm height when sitting, 17.3 cm height when standing
 % - model metrics
 % - links to the code and the model
 % - raw data sample of calibration, lookup-table format, samples, etc.
@@ -904,22 +925,102 @@ required for inference.
 \label{chap:results}
 \section{Robot construction and locomotion results}
 The robot was designed in Onshape to be easy-to-assemble with most of the parts print-in-place.
-Then, the printed parts with purchased components were assembled together. After that the software
+Then, the printed parts with purchased components were assembled together. After that, the software
 for the robot was developed using the Python programming language and the Adafruit ServoKit library.
-The last step was to prepare the dataset, train the YOLOv8n model, and deploy it on the Raspberry
+The last steps were to prepare the dataset, train the YOLOv8n model, and deploy it on the Raspberry
 Pi.
 
-The mechanical result is an assembled robot with 12 actuated joints. Printing the body, four legs,
-and eight servo holders took approximately 20.5 hours and used 490 grams of filament. Based on the
-assembly process, the robot can be assembled in approximately one hour after the printed parts are
-prepared. The prototype was tested using a laboratory power supply set to 6 V with a 6 A current
-limit.
+The mechanical result is an assembled quadruped robot with 12 actuated joints. Printing the body,
+four legs, and eight servo holders took approximately 20.5 hours and used 490 grams of filament.
+Based on the assembly process, the robot can be assembled in approximately one hour after the
+printed parts are prepared. The final robot has the following measurements: the body is $30.5$~cm
+long, the total length with legs is $38.5$~cm, the body width is $11.5$~cm, the total width with
+legs is $20.5$~cm, the height when sitting is $8.8$~cm, and the height when standing is $17.3$~cm.
+The total weight of the robot is $1,171$~g. The prototype was tested using a laboratory power supply
+set to 6 V with a 6 A current limit.
 
 The software can move the robot between various positions. Types of gaits implemented in the
 software are crawl, trot, turning, and sideways movement gaits. The leg movement is calculated
 using the lookup table, which converts the desired foot positions into hip and knee servo angles
 through inverse distance weighting. The web interface provides forward, backward, and sideways
 commands together with live video streaming and object detection.
+
+Table~\ref{tab:locomotion-measurement} shows the measured locomotion result of the robot. I used
+a script that makes the robot stand up and walk forward using the trot gait for 5 steps. By
+recording a video of the robot and measuring the distance traveled with a ruler and the time taken,
+I calculated the average speed of the robot with the following parameters. The measured speed is
+$4.75$~cm/s ($0.0475$~m/s). \texttt{x\_start} and \texttt{x\_end} are the starting and ending
+positions of each step relative to each leg's center position. \texttt{y\_ground} is the ground
+position, i.e. the initial height of the foot when it is on the ground. \texttt{lift} is the height
+of the foot when it is lifted during a step. \texttt{samples} is the number of samples used to
+calculate the foot trajectory, and \texttt{steps} is the number of steps taken by each leg.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\hline
+\textbf{Parameter or measurement} & \textbf{Value} \\
+\hline
+\texttt{x\_start} & $-20$ mm \\
+\texttt{x\_end} & $20$ mm \\
+\texttt{y\_ground} & $-165$ mm \\
+\texttt{lift} & $20$ mm \\
+\texttt{samples} & $5$ \\
+\texttt{steps} & $5$ \\
+Distance & $19$~cm \\
+Time & $4$~s \\
+Speed & $4.75$~cm/s ($0.0475$~m/s) \\
+\hline
+\end{tabular}
+\caption{Gait parameters and measured locomotion result.}
+\label{tab:locomotion-measurement}
+\end{table}
+
+Table~\ref{tab:recognition-walking-speed} shows the robot's measured walking speed using the web
+interface. The speed is drastically reduced due to the computational load on the Raspberry Pi since
+it is handling the web requests, video streaming, gait calculation, and optionally object detection.
+I measured the walking speed with and without object recognition while the video stream was always
+active.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\hline
+\textbf{Object recognition} & \textbf{Distance} & \textbf{Time} & \textbf{Speed} \\
+\hline
+Enabled & $4.5$~cm & $13$~s & $0.35$~cm/s ($0.0035$~m/s) \\
+Disabled & $3$~cm & $1.5$~s & $2$~cm/s ($0.02$~m/s) \\
+\hline
+\end{tabular}
+\caption{Measured walking speed with and without object recognition.}
+\label{tab:recognition-walking-speed}
+\end{table}
+
+While the robot was walking, I recorded the current draw and power consumption from the laboratory
+power supply. The measurements are shown in Table~\ref{tab:robot-power-consumption}. The idle
+current draw is $0.221$~A, which corresponds to a power consumption of $1.328$~W. Depending on
+whether the object detection was enabled, the current draw while walking is $2.619$~A without
+detection and $3.642$~A with detection. The trot gait was used in all the cases.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrr}
+\hline
+\textbf{Robot state} & \textbf{Current draw} & \textbf{Power consumption} \\
+\hline
+Idle & $0.221$~A & $1.328$~W \\
+Walking without detection & $2.619$~A & $15.7$~W \\
+Walking with detection & $3.642$~A & $22.02$~W \\
+\hline
+\end{tabular}
+\caption{Measurements from the laboratory power supply.}
+\label{tab:robot-power-consumption}
+\end{table}
+
+Finally, Table~\ref{tab:project-requirement-results} shows the results of the project compared with
+the initial requirements. The robot can move on flat surfaces in all directions, has 12 degrees of
+freedom, can detect humans and dogs, is easy to assemble and reproduce, and uses affordable
+components.
 
 \begin{table}[H]
 \centering
@@ -1058,9 +1159,11 @@ Figure~\ref{fig:robot-camera-predictions} shows additional examples captured usi
 camera. Unlike the validation images, these pictures represent the low camera position and outdoor
 conditions of the actual robot. The model handles the images well even with different lighting and
 backgrounds. The model detects objects at different distances, in different positions, and even when
-only a small part of an object is visible. It runs at 3 frames per second, which is low but usable
-for a first prototype. Disabling the object recognition mode increases the frame rate to 30 frames
-per second.
+only a small part of an object is visible. The original trained YOLO model runs at 3 frames per
+second, while the same model converted to NCNN runs at 7 to 8 frames per second, which is low but
+usable for a first prototype. These measurements demonstrate the performance improvement of the
+NCNN format. Disabling the object recognition mode increases the frame rate up to 33 frames per
+second.
 
 \begin{figure}[H]
   \centering
@@ -1137,8 +1240,8 @@ However, the majority of the components for this feature are bought and ready to
 This thesis presents the design and implementation of a low-cost quadruped robot with computer
 vision. All the software is written in Python. The robot supports external control and live video
 streaming. The resulting computer-vision model is a two-class YOLOv8n model converted to NCNN for
-speed and efficiency. The dataset for the model keeps full scenes, includes partial training views
-that approximate the visibility expected from the robot's low viewpoint.
+speed and efficiency. The dataset for the model keeps full scenes and includes partial training
+views that approximate the visibility expected from the robot's low viewpoint.
 
 The validation results show that the lightweight model can detect humans and dogs at a
 $320 \times 320$ input resolution. However, the lower recall and the difference between mAP@50 and
@@ -1149,12 +1252,14 @@ environments.
 
 \chapter{Future work}
 \label{chap:future-work}
-The robot can be improved in several ways. Servos motors can be replaced with higher torque servos
+The robot can be improved in several ways. Servo motors can be replaced with higher torque servos
 to increase the robot's load capacity. Additionally, the robot can be equipped with a battery pack,
-that was initially purchased but not installed, and a charging circuit to make it independent from
-an external power supply. Also the robot can be equipped with sensors, such as an IMU, to improve
+which was initially purchased but not installed, and a charging circuit to make it independent from
+an external power supply. Also, the robot can be equipped with sensors, such as an IMU, to improve
 its stability and navigation capabilities, or ground-contact sensors to detect the terrain and
-adjust its gait accordingly.
+adjust its gait accordingly. Moreover, shaft encoders can be added to the servos, or servos with
+built-in encoders of such type can be used to provide feedback on their position and speed and help
+automate the calibration process.
 
 The whole design can be scaled up to a larger robot with more powerful motors and a higher payload
 capacity that would make it more suitable for practical applications.
