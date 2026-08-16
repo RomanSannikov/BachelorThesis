@@ -1,7 +1,8 @@
 \documentclass[a4paper,12pt]{report}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{mathptmx}
+\usepackage[american]{babel}
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{Times New Roman}
 \usepackage{amsmath}
 \usepackage{geometry}
 \usepackage{tikz}
@@ -9,18 +10,46 @@
 \geometry{a4paper,margin=1in}
 \usepackage{setspace}
 \setstretch{1.5}
-\usepackage{hyperref}
-\def\Urlmuskip{0mu plus 1mu}
-\usepackage{parskip}
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{array}
+\usepackage{csquotes}
+\usepackage[authoryear,round]{natbib}
+\setcitestyle{aysep={, },citesep={; },notesep={, }}
+\NewDocumentCommand{\parencite}{o m}{%
+  \IfNoValueTF{#1}{\citep{#2}}{\citep[p.~#1]{#2}}%
+}
+\usepackage{xurl}
+\usepackage{hyperref}
+\hypersetup{
+  pdftitle={Design, Fabrication, and Control of a Low-Cost Quadruped Robot with Integrated Computer 
+Vision},
+  pdfauthor={Roman Sannikov}
+}
+\Urlmuskip=0mu plus 1mu
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
 
 \title{Bachelor Thesis}
 \author{Roman Sannikov}
 \date{\today}
 
 \begin{document}
+\pagenumbering{gobble}
 \begin{titlepage}
   \centering
   \vspace*{1cm}
@@ -42,7 +71,7 @@ Computer Vision\par}
   \vfill
   Belgrade, 2026\par
 \end{titlepage}
-\thispagestyle{empty}
+\pagenumbering{arabic}
 \tableofcontents
 \cleardoublepage
 
@@ -81,20 +110,21 @@ topics ranging from gaits and control to computer vision and successful real-wor
 The most important capability of a quadruped robot is locomotion. The mathematical analysis in the
 1968 \textit{Mathematical Biosciences} article ``On the stability properties of quadruped creeping
 gaits'' shows that there is ``a unique optimum gait that maximizes static
-stability''~\cite{mcghee1968}. The work explains that static stability requires the projection of
-the center of gravity onto the ground to remain within the support polygon. This polygon is formed
-by connecting all feet that are in contact with the ground, where each foot represents one contact
-point.
+stability'' \parencite[331]{mcghee1968}. The work explains that static stability requires the
+projection of the center of gravity onto the ground to remain within the support polygon. This
+polygon is formed by connecting all feet that are in contact with the ground, where each foot
+represents one contact point.
 
 However, stability can also be achieved by dynamic means. The concept of dynamic stability is
 discussed in the 1984 article ``Experiments in Balance with a 3D One-Legged Hopping Machine'',
 which describes control algorithms for forward velocity, body attitude, and hopping
-height~\cite{raibert1984}. Unlike static locomotion, dynamic locomotion allows the center of gravity
-to move outside the support region for short periods. Balance is then maintained through continuous
-motion and active control rather than through a permanently stable body position. Moving the
-projection of the center of gravity outside the support region causes the robot to start falling.
-During this falling motion, the robot places its feet to catch itself, and repeating this sequence
-creates a dynamic gait. In other words, dynamic stability is continuous falling and catching.
+height~\parencite{raibert1984}. Unlike static locomotion, dynamic locomotion allows the center of
+gravity to move outside the support region for short periods. Balance is then maintained through
+continuous motion and active control rather than through a permanently stable body position. Moving
+the projection of the center of gravity outside the support region causes the robot to start
+falling. During this falling motion, the robot places its feet to catch itself, and repeating this
+sequence creates a dynamic gait. In other words, dynamic stability is continuous falling and
+catching.
 
 In recent years, computing power has become more accessible, while the development of neural
 networks has enabled the creation of increasingly realistic simulated environments. Digital
@@ -102,55 +132,55 @@ versions of robots can be placed in these environments and given a task, such as
 A to point B, without receiving an explicitly programmed sequence of joint movements. Instead, the
 robot learns a movement policy by interacting with the simulated environment through Deep
 Reinforcement Learning (DRL). This approach was used for the ANYmal robot in the 2019 article
-``Learning Agile and Dynamic Motor Skills for Legged Robots''~\cite{hwangbo2019}. The researchers
-incorporated the real-world behavior of the robot's motors into the simulation. This made the
-simulation more realistic and helped the learned policy account for motor imperfections and other
-differences between the simulated and physical systems.
+``Learning Agile and Dynamic Motor Skills for Legged Robots''~\parencite{hwangbo2019}. The
+researchers incorporated the real-world behavior of the robot's motors into the simulation. This
+made the simulation more realistic and helped the learned policy account for motor imperfections and
+other differences between the simulated and physical systems.
 
 While the theoretical foundations establish how quadruped locomotion works, several landmark systems
 demonstrate what is achievable with mature engineering. Boston Dynamics' BigDog demonstrated
 load-carrying dynamic locomotion on rough terrain and was one of the first systems to show that
-quadrupeds could operate in real-world conditions outside the laboratory~\cite{bigdog}. It directly
-continued ideas from the 1984 hopping-machine experiments and made it evident that dynamic
-stability is the key to traversing challenging terrain.
-Similarly, MIT's Cheetah 3 showed that model-based control could achieve robust blind locomotion
-over obstacles~\cite{cheetah3}. These systems represented state-of-the-art quadruped capabilities
-at the time. The projects were sponsored by DARPA and MIT, respectively, and did not focus on cost
-reduction, but rather on pushing the boundaries of what quadruped robots could do.
+quadrupeds could operate in real-world conditions outside the laboratory~\parencite{bigdog}. It
+directly continued ideas from the 1984 hopping-machine experiments and made it evident that dynamic
+stability is the key to traversing challenging terrain. Similarly, MIT's Cheetah 3 showed that
+model-based control could achieve robust blind locomotion over obstacles~\parencite{cheetah3}.
+These systems represented state-of-the-art quadruped capabilities at the time. The projects were
+sponsored by DARPA and MIT, respectively, and did not focus on cost reduction, but rather on pushing
+the boundaries of what quadruped robots could do.
 
 Another key component of the project is computer vision. Generally, robots can be controlled by a
 human operator, which remains a very practical approach. However, computer vision is a significant
 step towards autonomy and high-level task execution. Vision is critical for navigation, obstacle
 avoidance, and interaction with the environment. For this project, I decided to use YOLO,
 a real-time object detection model based on the You Only Look Once
-architecture~\cite{yolo}. The original model divides an image into a grid, and each grid cell is
-responsible for predicting bounding boxes, confidence scores, and class probabilities for an
+architecture~\parencite{yolo}. The original model divides an image into a grid, and each grid cell
+is responsible for predicting bounding boxes, confidence scores, and class probabilities for an
 object whose center falls into that cell. As described in the paper:
 ``[The] network architecture is inspired by the GoogLeNet model for image classification\ldots\ [It]
 has 24 convolutional layers followed by 2 fully connected layers. Instead of the inception modules
 used by GoogLeNet,\ldots [it simply uses] $1 \times 1$ reduction layers followed by $3 \times 3$
-convolutional layers\ldots''~\cite{yolo}. The original YOLO uses a Sum-Squared Error (SSE) loss
-function between predictions and ground truth. While the architecture has evolved significantly,
-some later YOLO versions adopted CSPDarknet,
-a high-performance convolutional neural network backbone, together with more advanced loss
-functions. Other versions use different backbones, feature-aggregation methods, and detection
-heads. Nevertheless, single-pass detection remains a central principle.
+convolutional layers\ldots''~\parencite[780]{yolo}. The original YOLO uses a Sum-Squared Error (SSE)
+loss function between predictions and ground truth. While the architecture has evolved
+significantly, some later YOLO versions adopted CSPDarknet, a high-performance convolutional neural
+network backbone, together with more advanced loss functions. Other versions use different
+backbones, feature-aggregation methods, and detection heads. Nevertheless, single-pass detection
+remains a central principle.
 
 Additionally, it is worth mentioning ``Object Detection with Discriminatively Trained Part-Based
-Models''~\cite{felzenszwalb2010}. This classical paper describes how objects can be detected from
-their individual parts. The concept is relevant to this project because the robot's low camera
+Models''~\parencite{felzenszwalb2010}. This classical paper describes how objects can be detected
+from their individual parts. The concept is relevant to this project because the robot's low camera
 position may allow it to see only the lower part of a person or another object. Training the model
 to recognize partially visible objects helps the robot detect objects from its unusual viewpoint.
 
 While the model architecture and the approach to training it are important, the datasets used for
 training enable the model to reach its full potential. In this project, I utilize two of the most
 significant benchmarks in the history of object detection: Common Objects in Context
-(COCO)~\cite{coco} and Stanford Dogs~\cite{stanforddogs}. COCO established the standard for
-detecting objects in ``natural'' settings rather than perfectly centered studio shots. It contains
-more than $330,000$ images, of which over $200,000$ are labelled, with approximately $1.5$ million
-object instances across 80 object categories, including people, dogs, and cats. The Stanford Dogs
-dataset contains $20,580$ annotated images of dogs belonging to 120 breeds. Each image is annotated
-with a bounding box and a class label.
+(COCO)~\parencite{coco} and Stanford Dogs~\parencite{stanforddogs}. COCO established the standard
+for detecting objects in ``natural'' settings rather than perfectly centered studio shots. It
+contains more than $330,000$ images, of which over $200,000$ are labelled, with approximately $1.5$
+million object instances across 80 object categories, including people, dogs, and cats. The Stanford
+Dogs dataset contains $20,580$ annotated images of dogs belonging to 120 breeds. Each image is
+annotated with a bounding box and a class label.
 
 \chapter{Methodology}
 \section{Methods and technologies used}
@@ -210,7 +240,7 @@ specifying toolpaths, layer heights, support placement, and other print paramete
 
 I did not create the initial model myself, as doing so would require much more time. Instead, I
 used a suitable model by Tom Knox, published under a Creative Commons 4.0 license, and modified it
-to meet the requirements~\cite{knox}. The requirements not met by the initial model were 12 DOF
+to meet the requirements~\parencite{knox}. The requirements not met by the initial model were 12 DOF
 and ease of assembly. What the original model did provide was the base design I wanted, three DOF
 in each front leg, and a place for the camera module.
 
@@ -227,8 +257,8 @@ provide a specified stall torque of \(9.4\,\mathrm{kgf}\mathbin{\cdot}\mathrm{cm
 \(11\,\mathrm{kgf}\mathbin{\cdot}\mathrm{cm}\) at 6 V. The latter is approximately
 \(1.08\,\mathrm{N}\mathbin{\cdot}\mathrm{m}\). Their specified speed is $0.17$ seconds per
 $60^\circ$ at 4.8 V and $0.14$ seconds per $60^\circ$ at 6 V, and their specified operating
-voltage range is 4.8--7.2 V. However, these low-cost actuators have limited precision
-and torque, and they do not expose position feedback to the controller. Considering these
+voltage range is 4.8--7.2 V~\parencite{mg996r}. However, these low-cost actuators have limited
+precision and torque, and they do not expose position feedback to the controller. Considering these
 limitations, they are the minimum suitable option for this project.
 
 For the main controller, I chose a Raspberry Pi 4 Model B with 4 GB of RAM\@. It is
@@ -239,28 +269,29 @@ OpenGL ES 3.1 and Vulkan 1.0. It also provides dual-band Wi-Fi, Bluetooth 5.0 BL
 two USB 3.0 ports, two USB 2.0 ports, a 40-pin GPIO header, a two-lane MIPI CSI camera port, a
 two-lane MIPI DSI display port, USB-C power input, and 4 GB LPDDR4-3200 SDRAM\@. A big advantage of
 this computer is that it runs Raspberry Pi OS, a Linux-based operating system that allows fast
-prototyping and the use of existing programs and development tools~\cite{raspberrypi4}.
+prototyping and the use of existing programs and development tools~\parencite{raspberrypi4}.
 
 The Raspberry Pi provides enough general-purpose pins for 12 control signals, but only a small
 number support hardware PWM\@. Software-generated PWM under Linux can also have timing jitter. I
 therefore used a PCA9685, a 16-channel, 12-bit PWM driver that generates stable servo signals in
 hardware. It communicates over I2C using two signal lines: SDA on GPIO 2 and SCL on GPIO 3. It is
-also connected to 3.3 V for logic power and to a common ground~\cite{pca9685}.
+also connected to 3.3 V for logic power and to a common ground~\parencite{pca9685}.
 
-The specified stall current is 2.5 A per servo at 6 V. Using this value, a theoretical
-simultaneous stall of all 12 servos would require 30 A, although this is not the normal operating
-current. To power the robot, I decided to use a battery pack made from four 3500 mAh 18650
-lithium-ion batteries. Connected in a 2S2P configuration (two series pairs in parallel),
-they provide a nominal voltage of 7.2 V and a total nominal capacity of 7000 mAh. Since the
-Raspberry Pi requires a 5 V supply, the buck converters will provide 7 V for the servos and 5 V for
-the Raspberry Pi.
+The specified stall current is 2.5 A per servo at 6 V~\parencite{mg996r}. Using this value, a
+theoretical simultaneous stall of all 12 servos would require 30 A, although this is not the normal
+operating current. To power the robot, I decided to use a battery pack made from four 3500 mAh 18650
+lithium-ion batteries~\parencite{lgmj1}. Connected in a 2S2P configuration (two series pairs in
+parallel), they provide a nominal voltage of 7.2 V and a total nominal capacity of 7000 mAh. Since
+the Raspberry Pi requires a 5 V supply, the buck converters will provide 7 V for the servos and 5 V
+for the Raspberry Pi.
 
 For computer vision, I use a 5-megapixel Raspberry Pi Camera Module v1.3, which features
 an OmniVision OV5647 color CMOS sensor. The camera has a 3.6 mm focal length lens with a
 $54^\circ \times 41^\circ$
 angle of view, providing a horizontal field of view roughly equal to the distance from the subject
-at typical operating ranges. The camera uses a CSI ribbon cable to connect to the dedicated MIPI
-CSI port on the Raspberry Pi, offering lower communication overhead than a typical USB camera.
+at typical operating ranges~\parencite{cameraV1}. The camera uses a CSI ribbon cable to connect to
+the dedicated MIPI CSI port on the Raspberry Pi, offering lower communication overhead than a
+typical USB camera.
 
 On the software side, I use Python as the main programming language. It is a great choice for rapid
 prototyping and has a large ecosystem of libraries for robotics, computer vision, and machine
@@ -268,9 +299,9 @@ learning. For controlling the servos, I use the Adafruit PCA9685 library, which 
 interface for generating PWM control signals. PWM control does not regulate the servo's supply
 voltage. Instead, the pulse width encodes the requested position. Typical control pulses range from
 approximately 1 to 2 milliseconds and are repeated at a fixed rate. The exact pulse-to-angle range
-depends on servo calibration. For object detection, I use the Ultralytics YOLO library, which
-offers a streamlined interface for YOLO training and inference and integrates well with the
-Raspberry Pi platform.
+depends on servo calibration~\parencite{adafruitpca9685,mg996r}. For object detection, I use the
+Ultralytics YOLO library, which offers a streamlined interface for YOLO training and inference and
+integrates well with the Raspberry Pi platform~\parencite{ultralytics}.
 \subsection{Implementation}
 \label{subsec:implementation}
 The implementation started by downloading the original model and printing its most important part:
@@ -348,7 +379,7 @@ significant bit is fixed, while the lower six bits can be modified using the ext
 $A_0$ through $A_5$. With all six pins low, the binary address is $1000000$, corresponding to
 \texttt{0x40}. This design allows up to 62 PCA9685 boards to coexist on the same bus. For example,
 setting $A_0$ high while keeping the other pins low changes the address to \texttt{0x41}. For this
-project, I use the default address, \texttt{0x40}.
+project, I use the default address, \texttt{0x40}~\parencite{pca9685}.
 
 The other pins form 16 channels for PWM output, which are connected to the servos. Each channel
 consists of three pins: V+ for power, GND, and OUT for the control signal. I grouped them by leg in
@@ -413,8 +444,8 @@ $(6, -160)$~mm. The neighboring angle pairs $(40^\circ, 70^\circ)$ and
 $(40^\circ, 75^\circ)$ correspond to $(-3, -165)$~mm and $(-12, -168)$~mm, respectively.
 When the control system requests a target foot position $(x_t, y_t)$, it locates the nearest
 calibration points in the two-dimensional position space and interpolates between them using inverse
-distance weighting. For each calibration point $i$ with foot position $(x_i, y_i)$, the Euclidean
-distance to the target is computed as
+distance weighting~\parencite{shepard1968}. For each calibration point $i$ with foot position
+$(x_i, y_i)$, the Euclidean distance to the target is computed as
 \begin{equation}
 d_i = \sqrt{(x_t - x_i)^2 + (y_t - y_i)^2}.
 \end{equation}
@@ -476,11 +507,11 @@ the robot. The primary control interface is a web application, written in HTML a
 connected to a web server, written in Python, which runs on the Raspberry Pi and exposes HTTP-based
 remote-control endpoints. HTTP is a request-response application protocol operating over TCP, in
 which the client (the operator's browser) initiates a connection and sends a request, and the server
-returns a response. The server listens on a dedicated port and handles two types of requests. A GET
-request to the root path returns the HTML control page, which contains a JavaScript component that
-captures keyboard events. When the operator presses a key, the script issues an asynchronous POST
-request to \texttt{/moveForward}, \texttt{/moveBackwards}, \texttt{/walkSidewaysLeft}, or
-\texttt{/walkSidewaysRight}. The server parses the request path to
+returns a response~\parencite{fielding2022}. The server listens on a dedicated port and handles two
+types of requests. A GET request to the root path returns the HTML control page, which contains a
+JavaScript component that captures keyboard events. When the operator presses a key, the script
+issues an asynchronous POST request to \texttt{/moveForward}, \texttt{/moveBackwards},
+\texttt{/walkSidewaysLeft}, or \texttt{/walkSidewaysRight}. The server parses the request path to
 determine the desired action and, because HTTP itself is stateless, maintains an internal state
 machine to track whether the robot is idle, standing, or executing a gait. Upon receiving a movement
 command, the server transitions to the moving state and spawns a background execution thread so that
@@ -517,11 +548,11 @@ which progressively reduce the spatial dimensions of the feature maps, thereby d
 computational complexity and providing a degree of translation tolerance. This hierarchical
 feature extraction, combined with weight sharing across spatial locations, makes CNNs exceptionally
 effective for computer vision tasks while requiring far fewer parameters than fully connected
-networks.
+networks~\parencite{lecun2015}.
 
-The original YOLO introduced an innovative approach to object detection~\cite{yolo}. Before it,
-systems such as the Deformable Parts Model (DPM)~\cite{felzenszwalb2010} and Region-based
-Convolutional Neural Network (R-CNN)~\cite{rcnn} used classifiers in multi-stage detection
+The original YOLO introduced an innovative approach to object detection~\parencite{yolo}. Before it,
+systems such as the Deformable Parts Model (DPM)~\parencite{felzenszwalb2010} and Region-based
+Convolutional Neural Network (R-CNN)~\parencite{rcnn} used classifiers in multi-stage detection
 pipelines. Classifiers for each object were used to evaluate it at various locations and scales in
 a test image, either in a sliding-window manner or on proposed bounding boxes. A post-processing
 stage would then refine the bounding boxes and remove duplicate detections. Such cumbersome
@@ -531,7 +562,7 @@ objects, converting object detection into a single regression problem. This meth
 convolutional network to predict multiple bounding boxes and their class probabilities
 simultaneously, making it swift by simplifying the pipeline. Unlike the aforementioned mechanisms,
 YOLO can reason globally by examining the whole image, which gives it the advantage of learning
-generalized representations of objects.
+generalized representations of objects~\parencite{yolo}.
 
 The following description applies to the original YOLO model. The model starts by dividing the
 input image into an $S \times S$ grid. Each grid cell is responsible for predicting bounding boxes,
@@ -555,10 +586,11 @@ is obtained by multiplying the conditional class probabilities by the box confid
 \Pr(\text{class}_i) \times \text{IoU}_{\text{pred}}^{\text{truth}}.
 \end{equation}
 This product encodes both the probability that the box contains an object of class $i$ and how well
-the box fits the object.
+the box fits the object~\parencite{yolo}.
 
 The original network architecture borrows heavily from GoogLeNet, also known as
-Inception-v1~\cite{yolo}. It is made up of 24 convolutional layers followed by two fully connected
+Inception-v1~\parencite{yolo}. It is made up of 24 convolutional layers followed by two fully connec
+ted
 layers. The convolutional layers handle feature extraction, starting with simple edges and textures
 and building up to more complex patterns, while the fully connected layers map these features to
 the final output tensor of size $S \times S \times (B \times 5 + C)$.
@@ -570,14 +602,14 @@ object, which can bias the model toward always predicting ``no object''. To prev
 function applies different weights to different parts of the prediction. Coordinate errors are
 multiplied by $\lambda_{\text{coord}} = 5$ to increase their importance, while confidence errors
 for empty boxes are scaled down by $\lambda_{\text{noobj}} = 0.5$. This ensures that the network
-pays more attention to getting the boxes right when objects are actually present.
+pays more attention to getting the boxes right when objects are actually present~\parencite{yolo}.
 
 Because every cell predicts multiple bounding boxes, the network naturally generates many
 overlapping detections around the same object. To deal with this, YOLO applies non-maximum
 suppression (NMS) as a post-processing step. NMS works by selecting the box with the highest
 confidence and removing lower-confidence boxes that overlap with it significantly, meaning boxes
 whose IoU exceeds a chosen threshold. The end result is usually a single high-confidence bounding
-box per object rather than multiple overlapping predictions.
+box per object rather than multiple overlapping predictions~\parencite{yolo}.
 
 Since its original release, YOLO has evolved through several major architectural shifts. Early
 iterations moved from pure regression to anchor-based detection, introduced batch normalization
@@ -588,25 +620,26 @@ ecosystem migrated from Darknet to native PyTorch, and automated augmentation an
 calculation removed much of the manual tuning. More recently, the architecture has shifted toward
 anchor-free detection, decoupled classification and regression heads, and unified frameworks that
 integrate object detection with segmentation and pose estimation under a single model family. For
-this project, I decided to use the Ultralytics YOLO library with the YOLOv8n
-model~\cite{ultralytics}. YOLOv8 uses an anchor-free detector and separate outputs for
-classification and bounding-box regression. I chose the nano variant to reduce memory use and
-inference time on the Raspberry Pi.
+this project, I decided to use the Ultralytics YOLO library with the YOLOv8n model
+\parencite{ultralytics}. YOLOv8 uses an anchor-free detector and separate outputs for classification
+and bounding-box regression. I chose the nano variant to reduce memory use and inference time on the
+Raspberry Pi.
 
 As mentioned before in the project requirements, the selected target classes are dogs and humans.
-I chose two significant datasets in the history of object detection: COCO~\cite{coco} and Stanford
-Dogs~\cite{stanforddogs}. COCO contains more than $330,000$ images, of which over $200,000$ are
-labelled, and approximately $1.5$ million object instances across 80 object categories. Stanford
-Dogs contains $20,580$ annotated images of dogs belonging to 120 breeds. Even though the datasets
-are suitable as they are, they must be adapted to the case I have, which is a close-to-ground
-quadruped robot. The average height of the camera in the standing position is approximately
-$17$~cm, with an upward tilt of $15^\circ$.
+I chose two significant datasets in the history of object detection: COCO~\parencite{coco} and
+Stanford Dogs~\parencite{stanforddogs}. COCO contains more than $330,000$ images, of which over
+$200,000$ are labelled, and approximately $1.5$ million object instances across 80 object
+categories. Stanford Dogs contains $20,580$ annotated images of dogs belonging to 120 breeds. Even
+though the datasets are suitable as they are, they must be adapted to the case I have, which is a
+close-to-ground quadruped robot. The average height of the camera in the standing position is
+approximately $17$~cm, with an upward tilt of $15^\circ$.
 
 To understand why adaptation is necessary, it helps to look at what the camera actually sees. The
-camera has a horizontal field of view of $54^\circ$ and a vertical field of view of $41^\circ$. The
-optical axis is tilted $15^\circ$ above horizontal, so the vertical field of view is split around
-this axis: the top edge of the frame is $15^\circ + 20.5^\circ = 35.5^\circ$ above horizontal, and
-the bottom edge is $15^\circ - 20.5^\circ = -5.5^\circ$, i.e., $5.5^\circ$ below horizontal.
+camera has a horizontal field of view of $54^\circ$ and a vertical field of view of
+$41^\circ$~\parencite{cameraV1}. The optical axis is tilted $15^\circ$ above horizontal, so the
+vertical field of view is split around this axis: the top edge of the frame is
+$15^\circ + 20.5^\circ = 35.5^\circ$ above horizontal, and the bottom edge is
+$15^\circ - 20.5^\circ = -5.5^\circ$, i.e., $5.5^\circ$ below horizontal.
 
 Expressing all distances in centimeters, the height of the top edge at horizontal distance $d$ is
 \begin{equation}
@@ -823,25 +856,26 @@ contains no annotated human or dog.}
 The model is trained on a MacBook Pro with a 10-core Apple M2 Pro chip, a 16-core GPU, and $16$~GB
 of unified memory. The training utilizes the PyTorch Metal Performance Shaders (MPS)
 backend, which is Apple's framework, built on the Metal graphics API, for accelerating machine
-learning workloads on the GPU~\cite{pytorchmps,applemetal}. Architecturally, MPS abstracts the
+learning workloads on the GPU~\parencite{applemetal,pytorchmps}. Architecturally, MPS abstracts the
 complexity of writing low-level Metal Shading Language by providing optimized operations and
 kernels. These perform parallel mathematical operations such as multidimensional matrix
-multiplication and convolution~\cite{pytorchmps}.
+multiplication and convolution~\parencite{pytorchmps}.
 
 The execution of these operations is orchestrated by PyTorch's dynamic computational graph, which
 maps the sequence of mathematical operations and data dependencies required by the model. When
 the graph is dispatched to the \texttt{mps} device, PyTorch sends supported operations to the
-MPS backend for execution on the GPU~\cite{pytorchmps}. Apple silicon uses a Unified Memory
+MPS backend for execution on the GPU~\parencite{pytorchmps}. Apple silicon uses a Unified Memory
 Architecture (UMA), in which the CPU and GPU access a shared pool of physical
-memory~\cite{appleshared}. This can reduce the need to copy data between separate CPU and GPU memory
-pools. PyTorch's MPS backend maps supported graph operations to MPS Graph functions or optimized
-Metal kernels. The resulting GPU commands are encoded into Metal command buffers, which are
-scheduled for execution on the GPU\@. This tight integration of Apple's hardware with PyTorch allows
-the GPU to accelerate training compared with CPU-only execution.
+memory~\parencite{appleshared}. This can reduce the need to copy data between separate CPU and GPU
+memory pools. PyTorch's MPS backend maps supported graph operations to MPS Graph functions or
+optimized Metal kernels. The resulting GPU commands are encoded into Metal command buffers, which
+are scheduled for execution on the GPU\@. This tight integration of Apple's hardware with PyTorch
+allows the GPU to accelerate training compared with CPU-only execution.
 
 \subsubsection{Training configuration}
 The model is initialized from pretrained \texttt{yolov8n.pt} weights and fine-tuned on the prepared
-dataset. The environment contains Python 3.11.13, PyTorch 2.12.0, and Ultralytics 8.4.53.
+dataset~\parencite{ultralytics}. The environment contains Python 3.11.13, PyTorch 2.12.0, and
+Ultralytics 8.4.53.
 Several training runs were performed using the Python notebook and the Ultralytics command-line
 interface and both methods are equivalent. Here is the final command configuration I used for
 training the model:
@@ -886,19 +920,19 @@ result was obtained at the final epoch. The measured validation results are pres
 Chapter~\ref{chap:results}.
 
 After training, the PyTorch checkpoint was exported to the NCNN format for deployment on the
-Raspberry Pi because NCNN is designed for efficient execution on ARM-based devices. The export uses
-a batch size of one, a $320 \times 320$ input, and 32-bit floating-point weights. It contains the
-same classes \texttt{human} and \texttt{dog} and produces the NCNN parameter and binary weight files
-required for inference.
+Raspberry Pi because NCNN is designed for efficient execution on ARM-based
+devices~\parencite{ncnn}. The export uses a batch size of one, a $320 \times 320$ input, and 32-bit
+floating-point weights. It contains the same classes \texttt{human} and \texttt{dog} and produces
+the NCNN parameter and binary weight files required for inference.
 
 \chapter{Results}
 \label{chap:results}
 \section{Robot construction and locomotion results}
 The robot was designed in Onshape to be easy to assemble with most of the parts printed in place.
 Then, the printed parts with purchased components were assembled together. After that, the software
-for the robot was developed using the Python programming language and the Adafruit ServoKit library.
-The last steps were to prepare the dataset, train the YOLOv8n model, and deploy it on the Raspberry
-Pi.
+for the robot was developed using the Python programming language and the Adafruit ServoKit
+library~\parencite{servokit}. The last steps were to prepare the dataset, train the YOLOv8n model,
+and deploy it on the Raspberry Pi.
 
 The mechanical result is an assembled quadruped robot with 12 actuated joints. Printing the body,
 four legs, and eight servo holders took approximately 20.5 hours and used 490 grams of filament.
@@ -1234,93 +1268,147 @@ automate the calibration process.
 The whole design can be scaled up to a larger robot with more powerful motors and a higher payload
 capacity that would make it more suitable for practical applications.
 
-\begin{thebibliography}{10}
-\raggedright
+\renewcommand{\bibname}{Reference list}
+\setlength{\bibhang}{1.25cm}
+\setlength{\bibsep}{0pt}
+\begin{thebibliography}{99}
 \addcontentsline{toc}{chapter}{Reference list}
 
-\bibitem{bigdog}
-Raibert, M., Blankespoor, K., Nelson, G., \& Playter, R. (2008).
-BigDog, the rough-terrain quadruped robot.
-\textit{Proceedings of the 17th IFAC World Congress}, 10822--10825.
+\bibitem[Adafruit Industries(n.d.-a)]{adafruitpca9685}
+Adafruit Industries. (n.d.-a). \textit{Adafruit PCA9685 library documentation}.
+\url{https://docs.circuitpython.org/projects/pca9685/en/latest/}
 
-\bibitem{cheetah3}
-Katz, B., Di Carlo, J., \& Kim, S. (2019).
-MIT Cheetah 3: Design and control of a robust, dynamic quadruped robot.
-\textit{Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
-2245--2251.
+\bibitem[Adafruit Industries(n.d.-b)]{servokit}
+Adafruit Industries. (n.d.-b). \textit{Adafruit ServoKit library documentation}.
+\url{https://docs.circuitpython.org/projects/servokit/en/latest/}
 
-\bibitem{mcghee1968}
-McGhee, R. B., \& Frank, A. A. (1968).
-On the stability properties of quadruped creeping gaits.
-\textit{Mathematical Biosciences}, 3(3--4), 331--351.
+\bibitem[Apple Inc.(n.d.-a)]{appleshared}
+Apple Inc. (n.d.-a). \textit{Choosing a resource storage mode for Apple GPUs}.
+\url{
+https://developer.apple.com/documentation/metal/choosing-a-resource-storage-mode-for-apple-gpus}
 
-\bibitem{raibert1984}
-Raibert, M. H. (1984).
-Experiments in balance with a 3D one-legged hopping machine.
-\textit{The International Journal of Robotics Research}, 3(2), 75--92.
-
-\bibitem{hwangbo2019}
-Hwangbo, J., Lee, J., Dosovitskiy, A., Bellicoso, D., Tsounis, V., Koltun, V., \& Hutter, M. (2019).
-Learning agile and dynamic motor skills for legged robots.
-\textit{Science Robotics}, 4(26), eaau5872.
-
-\bibitem{yolo}
-Redmon, J., Divvala, S., Girshick, R., \& Farhadi, A. (2016).
-You only look once: Unified, real-time object detection.
-\textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-779--788.
-
-\bibitem{felzenszwalb2010}
-Felzenszwalb, P. F., Girshick, R. B., McAllester, D., \& Ramanan, D. (2010).
-Object detection with discriminatively trained part-based models.
-\textit{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 32(9), 1627--1645.
-
-\bibitem{rcnn}
-Girshick, R., Donahue, J., Darrell, T., \& Malik, J. (2014).
-Rich feature hierarchies for accurate object detection and semantic segmentation.
-\textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
-580--587.
-
-\bibitem{coco}
-Lin, T. Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll{\'a}r, P., \&
-Zitnick, C. L. (2014).
-Microsoft COCO: Common objects in context.
-\textit{Proceedings of the European Conference on Computer Vision (ECCV)}, 740--755.
-
-\bibitem{stanforddogs}
-Khosla, A., Jayadevaprakash, N., Yao, B., \& Fei-Fei, L. (2011).
-Novel dataset for fine-grained image categorization.
-\textit{First Workshop on Fine-Grained Visual Categorization, IEEE Conference on Computer Vision and
- Pattern Recognition}.
-
-\bibitem{knox}
-Knox, T. (n.d.). Quadruped I.
-\url{https://www.printables.com/model/1443108-quadruped-i}
-
-\bibitem{raspberrypi4}
-Raspberry Pi Ltd. (n.d.). Raspberry Pi 4 Model B specifications.
-\url{https://www.raspberrypi.com/products/raspberry-pi-4-model-b/specifications/}
-
-\bibitem{pca9685}
-NXP Semiconductors. (2015). PCA9685: 16-channel, 12-bit PWM Fm+ I2C-bus LED controller.
-\url{https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf}
-
-\bibitem{ultralytics}
-Ultralytics. (n.d.). YOLOv8 documentation.
-\url{https://docs.ultralytics.com/models/yolov8/}
-
-\bibitem{pytorchmps}
-PyTorch Contributors. (2026). MPS backend.
-\url{https://docs.pytorch.org/docs/stable/notes/mps.html}
-
-\bibitem{applemetal}
-Apple Inc. (n.d.). Metal framework.
+\bibitem[Apple Inc.(n.d.-b)]{applemetal}
+Apple Inc. (n.d.-b). \textit{Metal framework}.
 \url{https://developer.apple.com/documentation/metal}
 
-\bibitem{appleshared}
-Apple Inc. (n.d.). Choosing a resource storage mode for Apple GPUs.
-\url{https://developer.apple.com/documentation/metal/%
-choosing-a-resource-storage-mode-for-apple-gpus}
+\bibitem[Bledt et al.(2018)]{cheetah3}
+Bledt, G., Powell, M. J., Katz, B., Di Carlo, J., Wensing, P. M., \& Kim, S. (2018).
+MIT Cheetah 3: Design and control of a robust, dynamic quadruped robot.
+\textit{2018 IEEE/RSJ International Conference on Intelligent Robots and Systems},
+2245--2252.
+\url{https://doi.org/10.1109/IROS.2018.8593885}
+
+\bibitem[Felzenszwalb et al.(2010)]{felzenszwalb2010}
+Felzenszwalb, P. F., Girshick, R. B., McAllester, D., \& Ramanan, D. (2010).
+Object detection with discriminatively trained part-based models.
+\textit{IEEE Transactions on Pattern Analysis and Machine Intelligence, 32}(9), 1627--1645.
+\url{https://doi.org/10.1109/TPAMI.2009.167}
+
+\bibitem[Fielding et al.(2022)]{fielding2022}
+Fielding, R. T., Nottingham, M., \& Reschke, J. (2022).
+\textit{HTTP semantics} (RFC 9110). Internet Engineering Task Force.
+\url{https://doi.org/10.17487/RFC9110}
+
+\bibitem[Girshick et al.(2014)]{rcnn}
+Girshick, R., Donahue, J., Darrell, T., \& Malik, J. (2014).
+Rich feature hierarchies for accurate object detection and semantic segmentation.
+\textit{2014 IEEE Conference on Computer Vision and Pattern Recognition}, 580--587.
+\url{https://doi.org/10.1109/CVPR.2014.81}
+
+\bibitem[Hwangbo et al.(2019)]{hwangbo2019}
+Hwangbo, J., Lee, J., Dosovitskiy, A., Bellicoso, D., Tsounis, V., Koltun, V., \& Hutter, M.
+(2019). Learning agile and dynamic motor skills for legged robots.
+\textit{Science Robotics, 4}(26), eaau5872.
+\url{https://doi.org/10.1126/scirobotics.aau5872}
+
+\bibitem[Khosla et al.(2011)]{stanforddogs}
+Khosla, A., Jayadevaprakash, N., Yao, B., \& Fei-Fei, L. (2011).
+Novel dataset for fine-grained image categorization: Stanford Dogs.
+\textit{CVPR Workshop on Fine-Grained Visual Categorization}.
+
+\bibitem[Knox(n.d.)]{knox}
+Knox, T. (n.d.). \textit{Quadruped I}.
+\url{https://www.printables.com/model/1443108-quadruped-i}
+
+\bibitem[LeCun et al.(2015)]{lecun2015}
+LeCun, Y., Bengio, Y., \& Hinton, G. (2015).
+Deep learning. \textit{Nature, 521}(7553), 436--444.
+\url{https://doi.org/10.1038/nature14539}
+
+\bibitem[LG Chem(2016)]{lgmj1}
+LG Chem. (2016). \textit{INR18650 MJ1 lithium-ion rechargeable cell specification}.
+\url{https://power.tenergy.com/content/datasheet/30708_datasheet.pdf}
+
+\bibitem[Lin et al.(2014)]{coco}
+Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Dollár, P., \&
+Zitnick, C. L. (2014). Microsoft COCO: Common objects in context.
+In \textit{Computer vision -- ECCV 2014} (pp. 740--755). Springer.
+\url{https://doi.org/10.1007/978-3-319-10602-1_48}
+
+\bibitem[McGhee \& Frank(1968)]{mcghee1968}
+McGhee, R. B., \& Frank, A. A. (1968).
+On the stability properties of quadruped creeping gaits.
+\textit{Mathematical Biosciences, 3}(3--4), 331--351.
+\url{https://doi.org/10.1016/0025-5564(68)90090-4}
+
+\bibitem[Ni et al.(2017)]{ncnn}
+Ni, H., \& The ncnn Contributors. (2017).
+\textit{ncnn} [Computer software]. GitHub.
+\url{https://github.com/Tencent/ncnn}
+
+\bibitem[NXP Semiconductors(2015)]{pca9685}
+NXP Semiconductors. (2015).
+\textit{PCA9685: 16-channel, 12-bit PWM Fm+ I2C-bus LED controller}.
+\url{https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf}
+
+\bibitem[PyTorch Contributors(n.d.)]{pytorchmps}
+PyTorch Contributors. (n.d.).
+\textit{MPS backend}.
+\url{https://docs.pytorch.org/docs/stable/notes/mps.html}
+
+\bibitem[Raibert et al.(2008)]{bigdog}
+Raibert, M. H., Blankespoor, K., Nelson, G., \& Playter, R. (2008).
+BigDog, the rough-terrain quadruped robot.
+\textit{IFAC Proceedings Volumes, 41}(2), 10822--10825.
+\url{https://doi.org/10.3182/20080706-5-KR-1001.01833}
+
+\bibitem[Raibert et al.(1984)]{raibert1984}
+Raibert, M. H., Brown, H. B., Jr., \& Chepponis, M. (1984).
+Experiments in balance with a 3D one-legged hopping machine.
+\textit{The International Journal of Robotics Research, 3}(2), 75--92.
+\url{https://doi.org/10.1177/027836498400300207}
+
+\bibitem[Raspberry Pi Ltd.(n.d.-a)]{cameraV1}
+Raspberry Pi Ltd. (n.d.-a).
+\textit{Camera hardware}.
+\url{https://www.raspberrypi.com/documentation/accessories/camera.html}
+
+\bibitem[Raspberry Pi Ltd.(n.d.-b)]{raspberrypi4}
+Raspberry Pi Ltd. (n.d.-b).
+\textit{Raspberry Pi 4 Model B specifications}.
+\url{https://www.raspberrypi.com/products/raspberry-pi-4-model-b/specifications/}
+
+\bibitem[Redmon et al.(2016)]{yolo}
+Redmon, J., Divvala, S., Girshick, R., \& Farhadi, A. (2016).
+You only look once: Unified, real-time object detection.
+\textit{2016 IEEE Conference on Computer Vision and Pattern Recognition}, 779--788.
+\url{https://doi.org/10.1109/CVPR.2016.91}
+
+\bibitem[Shepard(1968)]{shepard1968}
+Shepard, D. (1968).
+A two-dimensional interpolation function for irregularly spaced data.
+\textit{Proceedings of the 1968 23rd ACM National Conference}, 517--524.
+\url{https://doi.org/10.1145/800186.810616}
+
+\bibitem[Tower Pro(n.d.)]{mg996r}
+Tower Pro. (n.d.).
+\textit{MG996R high-torque digital servo datasheet}.
+\url{https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf}
+
+\bibitem[Ultralytics(n.d.)]{ultralytics}
+Ultralytics. (n.d.).
+\textit{YOLOv8 documentation}.
+\url{https://docs.ultralytics.com/models/yolov8/}
 
 \end{thebibliography}
 
