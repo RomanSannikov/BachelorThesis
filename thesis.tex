@@ -24,7 +24,7 @@
 \begin{titlepage}
   \centering
   \vspace*{1cm}
-  {\Large University Singidunum\\Faculty of Technical Sciences\par}
+  {\Large Singidunum University\\Faculty of Technical Sciences\par}
   \vfill
   {\LARGE\bfseries Design, Fabrication, and Control of a Low-Cost Quadruped Robot with Integrated
 Computer Vision\par}
@@ -276,7 +276,7 @@ Raspberry Pi platform.
 The implementation started by downloading the original model and printing its most important part:
 the leg. The original leg model consisted of seven parts and took around three hours to print.
 Afterward, I assembled the leg, attached the hip to a servo, and connected the servo to the
-Raspberry Pi with jumper wires for an initial test. Printing and testing the leg was a crucial step
+Raspberry Pi with jumper wires for an initial test. Printing and testing the leg were crucial steps
 that helped me verify that the model could move. Having the physical model also helped me understand
 what needed to be changed.
 
@@ -345,9 +345,9 @@ its default 7-bit address,
 \texttt{0x40}. In the I2C protocol, each device requires a unique 7-bit address so that the
 controller can identify it. The PCA9685 uses a partially configurable address scheme: the most
 significant bit is fixed, while the lower six bits can be modified using the external address pins
-$A^0$ through $A^5$. With all six pins low, the binary address is $1000000$, corresponding to
+$A_0$ through $A_5$. With all six pins low, the binary address is $1000000$, corresponding to
 \texttt{0x40}. This design allows up to 62 PCA9685 boards to coexist on the same bus. For example,
-setting $A^0$ high while keeping the other pins low changes the address to \texttt{0x41}. For this
+setting $A_0$ high while keeping the other pins low changes the address to \texttt{0x41}. For this
 project, I use the default address, \texttt{0x40}.
 
 The other pins form 16 channels for PWM output, which are connected to the servos. Each channel
@@ -373,7 +373,7 @@ mechanical assembly complete, the control software can command movement.
     \centering
     \includegraphics[width=0.8\textwidth]{legs.jpg} % Replace with the latest benchmark
   \caption{On the left are the front sides of the legs. In the middle is the back side of a leg
-with connected horns. On the right are the hip-abduction and knee-flexion servos attached together
+with connected horns. On the right are the hip-extension and knee-flexion servos attached together
 with the servo holders.}
     \label{fig:legs}
 \end{figure}
@@ -454,37 +454,32 @@ movements across all legs, while center offsets compensate for variations in the
 Three hip-and-knee gait functions are implemented. In the crawl function, the legs swing in the
 order left front, right rear, right front, and left rear. Because the function moves one leg at a
 time, three feet remain on the ground, although the actual static stability still depends on the
-center-of-gravity position. In the trot gait, the left-front and right-rear legs form one diagonal
-pair, while the right-front and left-rear legs form the other. One pair follows the swing trajectory
-while the other follows the stance trajectory, and the pairs then exchange roles. In the turning
-gait, the left and right legs use opposite horizontal directions to generate rotational torque.
-
-The sideways gait uses the hip-abduction joints to move the legs laterally. First, the robot tilts
-its body away from the direction of movement, shifting its weight onto the supporting legs. The
-legs on the other side are then moved outward one at a time. After that, the robot tilts its body
-in the opposite direction, allowing the remaining legs to move inward one at a time. Repeating
-this sequence moves the robot sideways while three legs support the body during each step.
+center-of-gravity position as discussed in Section~\ref{sec:literature-review}. In the trot gait,
+the left-front and right-rear legs form one diagonal pair, while the right-front and left-rear legs
+form the other. One pair follows the swing trajectory while the other follows the stance trajectory,
+and the pairs then exchange roles. In the turning gait, the left and right legs use opposite
+horizontal directions to generate rotational torque. The sideways gait uses the hip-abduction joints
+to move the legs laterally. First, the robot tilts its body away from the direction of movement,
+shifting its weight onto the supporting legs. The legs on the other side are then moved outward one
+at a time. After that, the robot tilts its body in the opposite direction, allowing the remaining
+legs to move inward one at a time. Repeating this sequence moves the robot sideways while three legs
+support the body during each step.
 
 The software architecture is organized into four functional layers. The lowest layer abstracts the
 hardware interface, managing communication with the PWM driver and providing a unified interface for
 setting servo angles. Above this sits the kinematics layer, which implements the lookup table and
 interpolation logic to translate desired foot positions into joint angles. The gait generation layer
 defines the periodic leg movement patterns, swing and stance trajectories, and orchestrates
-their execution across multiple legs according to the selected gait pattern. As discussed in
-Section~\ref{sec:literature-review}, static stability requires the projection of the center of
-gravity to remain within the support polygon formed by the grounded feet. Moving one leg at a time
-keeps three feet on the ground, so the crawl gait is designed to meet this condition. However, the
-condition still depends on the actual center-of-gravity position and must be verified
-experimentally. The trot gait moves diagonal pairs simultaneously and trades static stability for
-speed. The highest layer comprises the application interfaces that allow human operators to command
-the robot. The primary control interface is a web server, which runs on the
-Raspberry Pi and exposes HTTP-based remote-control endpoints. HTTP is a request-response
-application protocol operating over TCP, in which the client
-(the operator's browser) initiates a connection and sends a request, and the server returns a
-response. The server listens on a dedicated port and handles two types of requests. A GET request
-to the root path returns the HTML control page, which contains a JavaScript component that captures
-keyboard events. When the operator presses a key, the script issues an asynchronous POST request to
-\texttt{/moveForward}, \texttt{/moveBackwards}, \texttt{/walkSidewaysLeft}, or
+their execution across multiple legs according to the selected gait pattern.
+The highest layer comprises the application interfaces that allow human operators to command
+the robot. The primary control interface is a web application, written in HTML and JavaScript,
+connected to a web server, written in Python, which runs on the Raspberry Pi and exposes HTTP-based
+remote-control endpoints. HTTP is a request-response application protocol operating over TCP, in
+which the client (the operator's browser) initiates a connection and sends a request, and the server
+returns a response. The server listens on a dedicated port and handles two types of requests. A GET
+request to the root path returns the HTML control page, which contains a JavaScript component that
+captures keyboard events. When the operator presses a key, the script issues an asynchronous POST
+request to \texttt{/moveForward}, \texttt{/moveBackwards}, \texttt{/walkSidewaysLeft}, or
 \texttt{/walkSidewaysRight}. The server parses the request path to
 determine the desired action and, because HTTP itself is stateless, maintains an internal state
 machine to track whether the robot is idle, standing, or executing a gait. Upon receiving a movement
@@ -494,10 +489,11 @@ returns the robot to a resting position if no further commands are received for 
 preventing the robot from remaining in an active stance indefinitely. This design prioritizes
 responsiveness and simplicity, making the robot accessible to operators without requiring
 specialized control hardware or software installation. For development and debugging, separate
-command-line utilities allow individual servos to be positioned manually. These tools were
-essential during calibration and mechanical assembly because they enable direct control of any
-joint without starting the full gait system. They were also used to set the servos to the angles
-required for collecting lookup-table measurements.
+command-line utilities, Python scripts, allow individual servos to be positioned manually or execute
+different predefined gaits. Some tools were essential during calibration and mechanical assembly
+because they enable direct control of any joint without starting the full gait system, the other
+were useful for testing individual gaits. The calibration tools were also used to set the servos to
+the angles required for collecting lookup-table measurements.
 
 \begin{figure}[H]
     \centering
@@ -506,7 +502,7 @@ required for collecting lookup-table measurements.
 supply, with a power plug behind it. The wires are not yet organized.}
     \label{fig:robot}
 \end{figure}
-\subsection{Object Detection Model}
+\subsection{Object detection model}
 \label{subsec:object-detection-models}
 Before discussing the YOLO architecture, it is important to understand the underlying technology
 that makes it possible: the Convolutional Neural Network (CNN). A CNN is a class of deep neural
@@ -523,7 +519,7 @@ feature extraction, combined with weight sharing across spatial locations, makes
 effective for computer vision tasks while requiring far fewer parameters than fully connected
 networks.
 
-The original YOLO introduced an innovative approach to object recognition~\cite{yolo}. Before it,
+The original YOLO introduced an innovative approach to object detection~\cite{yolo}. Before it,
 systems such as the Deformable Parts Model (DPM)~\cite{felzenszwalb2010} and Region-based
 Convolutional Neural Network (R-CNN)~\cite{rcnn} used classifiers in multi-stage detection
 pipelines. Classifiers for each object were used to evaluate it at various locations and scales in
@@ -595,8 +591,7 @@ integrate object detection with segmentation and pose estimation under a single 
 this project, I decided to use the Ultralytics YOLO library with the YOLOv8n
 model~\cite{ultralytics}. YOLOv8 uses an anchor-free detector and separate outputs for
 classification and bounding-box regression. I chose the nano variant to reduce memory use and
-inference time on the Raspberry Pi. Its actual on-device frame rate and detection performance must
-be measured experimentally.
+inference time on the Raspberry Pi.
 
 As mentioned before in the project requirements, the selected target classes are dogs and humans.
 I chose two significant datasets in the history of object detection: COCO~\cite{coco} and Stanford
@@ -611,7 +606,7 @@ To understand why adaptation is necessary, it helps to look at what the camera a
 camera has a horizontal field of view of $54^\circ$ and a vertical field of view of $41^\circ$. The
 optical axis is tilted $15^\circ$ above horizontal, so the vertical field of view is split around
 this axis: the top edge of the frame is $15^\circ + 20.5^\circ = 35.5^\circ$ above horizontal, and
-the bottom edge is $15^\circ - 20.5^\circ = 5.5^\circ$ below horizontal.
+the bottom edge is $15^\circ - 20.5^\circ = -5.5^\circ$, i.e., $5.5^\circ$ below horizontal.
 
 Expressing all distances in centimeters, the height of the top edge at horizontal distance $d$ is
 \begin{equation}
@@ -777,17 +772,17 @@ The table shows that the low position of the robot's camera does not capture ful
 at closer distances. The closer distances are important because those are the distances where dogs
 and human can interact with the robot and the robot's vision must support detecting them. This is
 a very different viewpoint from the standard dataset images, which are usually taken at eye level
-and show complete objects. Additionally, the camera resolution is low-quality whereas standard
-datasets usually contain higher resolution images. Training on those images without adjustment would
-leave the model unprepared for such perspective or image quality.
+and show complete objects. Additionally, the robot's camera may have lower image quality whereas
+standard datasets usually contain higher resolution images. Training on those images without
+adjustment would leave the model unprepared for such perspective or image quality.
 
-To address these problems and satisfy the project requirements, I created a new custom built dataset
+To address these problems and satisfy the project requirements, I created a new custom-built dataset
 that combines modified COCO and Stanford Dogs datasets. The two output classes are human and dog.
 The split between training, validation, and test is $80\%$, $10\%$, and $10\%$ for each dataset.
 Several checks were added to reduce incorrect labels and data leakage. Stanford Dogs provides dog
 annotations but can also show people who are not annotated. A pretrained detector was therefore used
 as a screening step, and $3,869$ Stanford images with a person detection at a confidence of at least
-$0.20$ were excluded. Since COCO annotates both humans and dogs, such detector was not needed in
+$0.20$ were excluded. Since COCO annotates both humans and dogs, such a detector was not needed in
 that case.
 
 The source images keep their native resolution and aspect ratio. They are not stretched or
@@ -847,7 +842,7 @@ the GPU to accelerate training compared with CPU-only execution.
 \subsubsection{Training configuration}
 The model is initialized from pretrained \texttt{yolov8n.pt} weights and fine-tuned on the prepared
 dataset. The environment contains Python 3.11.13, PyTorch 2.12.0, and Ultralytics 8.4.53.
-Several training runs were performed from the Python notebook and the Ultralytics command-line
+Several training runs were performed using the Python notebook and the Ultralytics command-line
 interface and both methods are equivalent. Here is the final command configuration I used for
 training the model:
 \begin{minted}{bash}
@@ -868,7 +863,7 @@ where:
   \item[\texttt{yolo detect train}] The Ultralytics CLI command that selects the YOLO detection task
 and starts a training run.
   \item[\texttt{model=yolov8n.pt}] The initial weights to load (YOLOv8 Nano). This uses a small,
-fast pretrained model as a transfer-learning starting point.
+fast pretrained model as a starting point.
   \item[\texttt{data}] The value \texttt{dataset.yaml} points to the dataset configuration YAML
 describing training/validation image locations and class names.
   \item[\texttt{imgsz=320}] Sets the input canvas to $320 \times 320$ pixels. Images keep their
@@ -883,8 +878,7 @@ instead of the CPU.
   \item[\texttt{seed=42}] Fix the random seed to ensure reproducibility of the training process.
   \item[\texttt{deterministic=True}] Forces deterministic algorithm use to improve reproducibility.
   \item[\texttt{val=True}] Evaluate the validation split after every epoch.
-  \item[\texttt{mosaic=1.0}, \texttt{close\_mosaic=10}] Use mosaic augmentation during training and
-disable it for the final ten epochs so the model finishes on normal image composition.
+  \item[\texttt{mosaic=1.0}] Use mosaic augmentation during training.
 \end{description}
 
 Training the model for all 60 epochs took approximately 6 hours and 56 minutes. The best validation
@@ -897,34 +891,10 @@ a batch size of one, a $320 \times 320$ input, and 32-bit floating-point weights
 same classes \texttt{human} and \texttt{dog} and produces the NCNN parameter and binary weight files
 required for inference.
 
-% Add:
-% - physical metrics: speed, torque, stride length, power consumption, etc.
-%  - 44-51 FPS camera without detection
-%  - 3 FPS with the original detection model
-%  - 7-8 FPS with the NCNN detection model
-%  - 19 cm per 4 seconds = 4.75 cm/s = 0.0475 m/s
-%    x_start = -20
-%    x_end = 20
-%    y_ground = -165
-%    lift = 20
-%    samples = 5
-%    steps = 5
-%  - 4.5 cm per 13 sec = 0.35 cm/s = 0.0035 m/s with recognition
-%  - 3 cm per 1.5 sec = 2 cm/s = 0.02 m/s without recognition
-%  - Still: 0.221A, 1.328W from the lab power supply
-%  - Walking: 2.619A, 15.7W without detection from the lab power supply
-%  - Walking: 3.642A, 22.02W with detection from the lab power supply
-%  - Weight: 1171 g
-%  - Length: 30.5 cm (body), 38.5 cm (with legs), 11.5 cm (body width), 20.5 cm (width with legs),
-%        8.8 cm height when sitting, 17.3 cm height when standing
-% - model metrics
-% - links to the code and the model
-% - raw data sample of calibration, lookup-table format, samples, etc.
-
 \chapter{Results}
 \label{chap:results}
 \section{Robot construction and locomotion results}
-The robot was designed in Onshape to be easy-to-assemble with most of the parts print-in-place.
+The robot was designed in Onshape to be easy to assemble with most of the parts printed in place.
 Then, the printed parts with purchased components were assembled together. After that, the software
 for the robot was developed using the Python programming language and the Adafruit ServoKit library.
 The last steps were to prepare the dataset, train the YOLOv8n model, and deploy it on the Raspberry
@@ -976,31 +946,31 @@ Speed & $4.75$~cm/s ($0.0475$~m/s) \\
 \label{tab:locomotion-measurement}
 \end{table}
 
-Table~\ref{tab:recognition-walking-speed} shows the robot's measured walking speed using the web
+Table~\ref{tab:detection-walking-speed} shows the robot's measured walking speed using the web
 interface. The speed is drastically reduced due to the computational load on the Raspberry Pi since
 it is handling the web requests, video streaming, gait calculation, and optionally object detection.
-I measured the walking speed with and without object recognition while the video stream was always
+I measured the walking speed with and without object detection while the video stream was always
 active.
 
 \begin{table}[H]
 \centering
 \begin{tabular}{lrrr}
 \hline
-\textbf{Object recognition} & \textbf{Distance} & \textbf{Time} & \textbf{Speed} \\
+\textbf{Object detection} & \textbf{Distance} & \textbf{Time} & \textbf{Speed} \\
 \hline
 Enabled & $4.5$~cm & $13$~s & $0.35$~cm/s ($0.0035$~m/s) \\
 Disabled & $3$~cm & $1.5$~s & $2$~cm/s ($0.02$~m/s) \\
 \hline
 \end{tabular}
-\caption{Measured walking speed with and without object recognition.}
-\label{tab:recognition-walking-speed}
+\caption{Measured walking speed with and without object detection.}
+\label{tab:detection-walking-speed}
 \end{table}
 
 While the robot was walking, I recorded the current draw and power consumption from the laboratory
 power supply. The measurements are shown in Table~\ref{tab:robot-power-consumption}. The idle
 current draw is $0.221$~A, which corresponds to a power consumption of $1.328$~W. Depending on
 whether the object detection was enabled, the current draw while walking is $2.619$~A without
-detection and $3.642$~A with detection. The trot gait was used in all the cases.
+detection and $3.642$~A with detection. The trot gait was used in all cases.
 
 \begin{table}[H]
 \centering
@@ -1051,7 +1021,7 @@ The YOLOv8n model completed 60 epochs. Table~\ref{tab:vision-validation-results}
 results from the validation split at the final and best epoch. Precision describes the fraction of
 reported detections that are correct, while recall describes the fraction of annotated objects that
 were found. mAP@50 uses an Intersection over Union threshold of $0.50$. mAP@50:95 averages the
-result over thresholds from $0.50$ to $0.95$ and is therefore more strict about bounding-box
+result over thresholds from $0.50$ to $0.95$ and is therefore stricter about bounding-box
 placement.
 
 \begin{table}[H]
@@ -1162,8 +1132,8 @@ backgrounds. The model detects objects at different distances, in different posi
 only a small part of an object is visible. The original trained YOLO model runs at 3 frames per
 second, while the same model converted to NCNN runs at 7 to 8 frames per second, which is low but
 usable for a first prototype. These measurements demonstrate the performance improvement of the
-NCNN format. Disabling the object recognition mode increases the frame rate up to 33 frames per
-second.
+NCNN format. Disabling the object detection mode increases the frame rate of the video stream to up
+to 33 frames per second.
 
 \begin{figure}[H]
   \centering
@@ -1247,8 +1217,8 @@ The validation results show that the lightweight model can detect humans and dog
 $320 \times 320$ input resolution. However, the lower recall and the difference between mAP@50 and
 mAP@50:95 show that missed objects and precise localization can still be improved.
 
-The conducted outdoor test validates that the model is capable of detecting humans and dogs in real
-environments.
+The conducted outdoor test demonstrates that the model is capable of detecting humans and dogs in
+real environments.
 
 \chapter{Future work}
 \label{chap:future-work}
