@@ -465,36 +465,35 @@ calibration angles:
 \theta_{\text{knee}} = \sum_{i=1}^{4} \hat{w}_i \, \theta_{\text{knee},i}.
 \end{equation}
 
-In practice, the implementation includes several practical adjustments: if the target lies within
-$0.1$~mm of a calibration point, the stored angles are returned directly without interpolation;
-distances below $0.001$~mm are clamped to prevent division by zero; and the final interpolated
-angles are rounded to the nearest integer because the current software represents commands in
-whole degrees. This is a software choice, not a limitation of the PCA9685 or servo. The method
-assigns greater influence to closer calibration points, producing interpolated angle estimates for
-positions that were not explicitly measured. The approach is particularly suitable for this
-mechanism because the mechanical coupling and manufacturing tolerances make an accurate closed-form
-analytical model difficult to derive. While inverse kinematics is the conventional approach in
-robotics literature, empirical mapping provides a practical alternative when mechanical complexity
-or manufacturing tolerances make analytical models unreliable. The
-abduction joints, which control side-to-side leg movement, are not included in the
-lookup table because their motion is kinematically decoupled from the primary leg swing mechanism.
-These joints operate independently and are controlled through direct angle commands. Each servo is
-individually calibrated to account for mechanical variations and assembly differences between left
-and right legs. A direction multiplier ensures that positive commands produce consistent physical
-movements across all legs, while center offsets compensate for variations in the home position.
-Three hip-and-knee gait functions are implemented. In the crawl function, the legs swing in the
-order left front, right rear, right front, and left rear. Because the function moves one leg at a
-time, three feet remain on the ground, although the actual static stability still depends on the
-center-of-gravity position as discussed in Section~\ref{sec:literature-review}. In the trot gait,
-the left-front and right-rear legs form one diagonal pair, while the right-front and left-rear legs
-form the other. One pair follows the swing trajectory while the other follows the stance trajectory,
-and the pairs then exchange roles. In the turning gait, the left and right legs use opposite
-horizontal directions to generate rotational torque. The sideways gait uses the hip-abduction joints
-to move the legs laterally. First, the robot tilts its body away from the direction of movement,
-shifting its weight onto the supporting legs. The legs on the other side are then moved outward one
-at a time. After that, the robot tilts its body in the opposite direction, allowing the remaining
-legs to move inward one at a time. Repeating this sequence moves the robot sideways while three legs
-support the body during each step.
+In practice, if the distance to the nearest calibration point is less than $0.1$~mm, the stored
+angles are returned directly without interpolation, which also prevents division by zero in the
+weighting calculation. Otherwise, the final interpolated angles are rounded to the nearest integer
+because the lookup function returns joint targets in whole degrees. This rounding is a software
+choice, not a limitation of the PCA9685 or servo. The method assigns greater influence to closer
+calibration points, producing interpolated angle estimates for positions that were not explicitly
+measured. The approach is particularly suitable for this mechanism because the mechanical coupling
+and manufacturing tolerances make an accurate closed-form analytical model difficult to derive.
+While inverse kinematics is the conventional approach in robotics literature, empirical mapping
+provides a practical alternative when mechanical complexity or manufacturing tolerances make
+analytical models unreliable. The abduction joints, which control side-to-side leg movement, are not
+included in the lookup table because their motion is kinematically decoupled from the primary leg
+swing mechanism. These joints operate independently and are controlled through direct angle
+commands. Each servo is individually calibrated to account for mechanical variations and assembly
+differences between left and right legs. A direction multiplier ensures that positive commands
+produce consistent physical movements across all legs, while center offsets compensate for
+variations in the home position. Three hip-and-knee gait functions are implemented. In the crawl
+function, the legs swing in the order left front, right rear, right front, and left rear. Because
+the function moves one leg at a time, three feet remain on the ground, although the actual static
+stability still depends on the center-of-gravity position as discussed in
+Section~\ref{sec:literature-review}. In the trot gait, the left-front and right-rear legs form one
+diagonal pair, while the right-front and left-rear legs form the other. One pair follows the swing
+trajectory while the other follows the stance trajectory, and the pairs then exchange roles. In the
+turning gait, the left and right legs use opposite horizontal directions to generate rotational
+torque. The sideways gait uses the hip-abduction joints to move the legs laterally. First, the robot
+tilts its body away from the direction of movement, shifting its weight onto the supporting legs.
+The legs on the other side are then moved outward one at a time. After that, the robot tilts its
+body in the opposite direction, allowing the remaining legs to move inward one at a time. Repeating
+this sequence moves the robot sideways while three legs support the body during each step.
 
 The software architecture is organized into four functional layers. The lowest layer abstracts the
 hardware interface, managing communication with the PWM driver and providing a unified interface for
