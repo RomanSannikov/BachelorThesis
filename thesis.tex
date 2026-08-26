@@ -943,10 +943,29 @@ The total weight of the robot is $1,171$~g. The prototype was tested using a lab
 set to 6 V with a 6 A current limit.
 
 The software can move the robot between various positions. Types of gaits implemented in the
-software are crawl, trot, turning, and sideways movement gaits. The leg movement is calculated
-using the lookup table, which converts the desired foot positions into hip and knee servo angles
-through inverse distance weighting. The web interface provides forward, backward, and sideways
-commands together with live video streaming and object detection.
+software are crawl, trot, turning, and sideways movement gaits,
+Figure~\ref{fig:quadruped-in-motion}. The leg movement is calculated using the lookup table, which
+converts the desired foot positions into hip and knee servo angles through inverse distance
+weighting. The web interface provides forward, backward, and sideways commands together with live
+video streaming and object detection, Figure~\ref{fig:web-interface}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.38\textheight,keepaspectratio]
+    {IDG_20260826_114857_420.jpg}
+  \par\nointerlineskip
+  \includegraphics[width=0.95\textwidth,height=0.38\textheight,keepaspectratio]
+    {IDG_20260826_114857_813.jpg}
+  \caption{Quadruped robot in motion.}
+  \label{fig:quadruped-in-motion}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{web_interface.png}
+  \caption{Web interface for controlling the robot.}
+  \label{fig:web-interface}
+\end{figure}
 
 Table~\ref{tab:locomotion-measurement} shows the measured locomotion result of the robot. I used
 a script that makes the robot stand up and walk forward using the trot gait for 5 steps. By
